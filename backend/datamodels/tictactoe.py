@@ -98,6 +98,7 @@ class UltimateTicTacToeGameState:
     bottomleft: SubTicTacToeGame
     bottommiddle: SubTicTacToeGame
     bottomright: SubTicTacToeGame
+    next_turn_timestamp: int = 0 # for history tracking of turn times
 
     def getWinner(self) -> str:
         winning_combinations = [

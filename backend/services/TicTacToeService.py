@@ -1,4 +1,5 @@
 from datamodels.tictactoe import UltimateTicTacToe, UltimateTicTacToeGameState, SubTicTacToeGame
+import time
 
 class TicTacToeService:
     def init_empty_game(self) -> UltimateTicTacToe:
@@ -59,7 +60,9 @@ class TicTacToeService:
         
         # safe to make a move
         # copy the current game state to history
-        game.history.append(game.current_game.copy())
+        history_entry = game.current_game.copy()
+        history_entry.next_turn_timestamp = int(time.time())
+        game.history.append(history_entry)
         # make the move
         setattr(subgame, position, player)
         # the next active corner is determined by the position played, unless that subgame is finished

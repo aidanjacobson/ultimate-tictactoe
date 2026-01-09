@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from services.UserService import UserService
 from services.GameFileService import GameFileService
 from database.schema import SessionLocal, Game, User
@@ -43,6 +43,17 @@ class GameResponse(BaseModel):
     o_user_id: int
     finished: bool
     winner_id: Optional[int]
+
+    class Config:
+        from_attributes = True
+
+class GameStateResponse(BaseModel):
+    id: int
+    x_user_id: int
+    o_user_id: int
+    finished: bool
+    winner_id: Optional[int]
+    state: Dict[str, Any]
 
     class Config:
         from_attributes = True
@@ -116,7 +127,7 @@ class Server:
 
         # ===== Game Routes =====
 
-        @self.app.post("/api/games", response_model=GameResponse)
+        @self.app.post("/api/games", response_model=Dict[str, Any])
         async def create_game(game: GameCreate):
             """Create a new game"""
             try:
@@ -138,21 +149,47 @@ class Server:
                 self.db.refresh(game_record)
                 
                 # Initialize game via GameFileService
-                self.game_file_service.start_new_game(game_record.id)
+                game_state = self.game_file_service.start_new_game(game_record.id)
                 
-                return GameResponse.from_orm(game_record)
+                # Serialize game state
+                game_data = self.game_file_service._serialize_game(game_state)
+                
+                return {
+                    "id": game_record.id,
+                    "x_user_id": game_record.x_user_id,
+                    "o_user_id": game_record.o_user_id,
+                    "finished": game_record.finished,
+                    "winner_id": game_record.winner_id,
+                    "state": game_data
+                }
             except HTTPException:
                 raise
             except Exception as e:
                 raise HTTPException(status_code=400, detail=str(e))
 
-        @self.app.get("/api/games/{game_id}", response_model=GameResponse)
+        @self.app.get("/api/games/{game_id}", response_model=Dict[str, Any])
         async def get_game(game_id: int):
-            """Get a game by ID"""
-            game = self.db.query(Game).filter(Game.id == game_id).first()
-            if not game:
+            """Get a game by ID with full state"""
+            game_record = self.db.query(Game).filter(Game.id == game_id).first()
+            if not game_record:
                 raise HTTPException(status_code=404, detail="Game not found")
-            return GameResponse.from_orm(game)
+            
+            # Load the game state from file
+            game = self.game_file_service.load_game(game_id)
+            if not game:
+                raise HTTPException(status_code=400, detail="Could not load game state")
+            
+            # Serialize game state
+            game_data = self.game_file_service._serialize_game(game)
+            
+            return {
+                "id": game_record.id,
+                "x_user_id": game_record.x_user_id,
+                "o_user_id": game_record.o_user_id,
+                "finished": game_record.finished,
+                "winner_id": game_record.winner_id,
+                "state": game_data
+            }
 
         @self.app.get("/api/games", response_model=List[GameResponse])
         async def list_games():
@@ -160,7 +197,7 @@ class Server:
             games = self.db.query(Game).all()
             return [GameResponse.from_orm(g) for g in games]
 
-        @self.app.post("/api/games/{game_id}/turn")
+        @self.app.post("/api/games/{game_id}/turn", response_model=Dict[str, Any])
         async def take_turn(game_id: int, turn: GameTurn):
             """Execute a turn in a game"""
             try:
@@ -185,7 +222,17 @@ class Server:
                 # Refresh game record from database in case it was updated
                 self.db.refresh(game_record)
                 
-                return GameResponse.from_orm(game_record)
+                # Serialize updated game state
+                game_data = self.game_file_service._serialize_game(game)
+                
+                return {
+                    "id": game_record.id,
+                    "x_user_id": game_record.x_user_id,
+                    "o_user_id": game_record.o_user_id,
+                    "finished": game_record.finished,
+                    "winner_id": game_record.winner_id,
+                    "state": game_data
+                }
             except HTTPException:
                 raise
             except Exception as e:
