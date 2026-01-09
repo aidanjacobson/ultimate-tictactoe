@@ -1,10 +1,13 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from services.UserService import UserService
 from services.GameFileService import GameFileService
 from database.schema import SessionLocal, Game, User
+
+import os
 
 # Pydantic models for request/response
 class UserCreate(BaseModel):
@@ -65,7 +68,17 @@ class Server:
         self.user_service = UserService()
         self.game_file_service = GameFileService()
         self.db = SessionLocal()
+
+        self._ensure_www()
+        self._setup_static()
         self._setup_routes()
+
+    
+    def _ensure_www(self):
+        os.makedirs("www", exist_ok=True)
+
+    def _setup_static(self):
+        self.app.mount("/", StaticFiles(directory="www", html=True), name="static")
 
     def _setup_routes(self):
         """Setup all API routes"""
