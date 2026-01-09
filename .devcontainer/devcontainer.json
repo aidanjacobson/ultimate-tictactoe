@@ -7,13 +7,12 @@
   "forwardPorts": [8080, 5173],
 
   "features": {
-    // "ghcr.io/devcontainers/features/node:1": {
-    //   "version": "20"
-    // }
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    }
   },
 
-//   "postCreateCommand": "pip install --upgrade pip && pip install -r backend/requirements.txt && cd frontend && npm install",
-  "postCreateCommand": "pip install --upgrade pip && pip install -r backend/requirements.txt",
+  "postCreateCommand": "pip install --upgrade pip && pip install -r backend/requirements.txt && cd frontend && npm install",
 
   "customizations": {
     "vscode": {
@@ -22,7 +21,8 @@
         "ms-python.debugpy",
         "ms-python.vscode-pylance",
         "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode"
+        "esbenp.prettier-vscode",
+        "qwtel.sqlite-viewer"
       ],
       "settings": {
         "python.defaultInterpreterPath": "/usr/local/bin/python",
