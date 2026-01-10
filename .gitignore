@@ -15,7 +15,7 @@ dist-ssr/
 coverage/
 
 # Production builds
-build/
+build
 
 # Environment variables
 .env
@@ -23,7 +23,7 @@ build/
 .env.local
 .env.development.local
 .env.test.local
-.env.production.local
+.env.production.locald/
 
 # Logs
 logs/
@@ -37,13 +37,3 @@ lerna-debug.log*
 # Misc
 .DS_Store
 devdata/
-
-# Editor / IDE
-.vscode/*
-!.vscode/extensions.json
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
