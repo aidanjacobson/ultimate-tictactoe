@@ -1,12 +1,13 @@
 from typing import Optional, List
 from database.schema import SessionLocal, User
+import bcrypt
 
 
 class UserService:
     def __init__(self):
         self.db = SessionLocal()
 
-    def create_user(self, name: str, username: str, email: str, hashed_password: str) -> User:
+    def create_user(self, name: str, username: str, email: str, password: str) -> User:
         """
         Create a new user.
         
@@ -14,11 +15,14 @@ class UserService:
             name: The user's display name
             username: The unique username
             email: The user's email address
-            hashed_password: The hashed password
+            password: The plain password (will be hashed)
         
         Returns:
             The created User object
         """
+        # Hash the password
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        
         user = User(
             name=name,
             username=username,
@@ -40,7 +44,7 @@ class UserService:
         Returns:
             The User object, or None if not found or deleted
         """
-        return self.db.query(User).filter(User.id == user_id, User.deleted == False).first()
+        return self.db.query(User).filter(User.id == user_id).first()
 
     def get_user_by_username(self, username: str) -> Optional[User]:
         """
@@ -81,7 +85,7 @@ class UserService:
         
         Args:
             user_id: The user's ID
-            **kwargs: The fields to update (name, username, email, hashed_password)
+            **kwargs: The fields to update (name, username, email, password)
         
         Returns:
             The updated User object, or None if not found
@@ -91,8 +95,12 @@ class UserService:
             return None
         
         for key, value in kwargs.items():
-            if hasattr(user, key) and key in ['name', 'username', 'email', 'hashed_password']:
-                setattr(user, key, value)
+            if hasattr(user, key) and key in ['name', 'username', 'email', 'password']:
+                if key == 'password':
+                    # Hash the password if it's being updated
+                    setattr(user, 'hashed_password', bcrypt.hashpw(value.encode('utf-8'), bcrypt.gensalt()).decode('utf-8'))
+                else:
+                    setattr(user, key, value)
         
         self.db.commit()
         self.db.refresh(user)
@@ -113,6 +121,8 @@ class UserService:
             return False
         
         user.deleted = True  # type: ignore
+        user.username = f"deleted_user_{user.id}"
+        user.email = f"deleted_user_{user.id}@example.com"
         self.db.commit()
         return True
 

@@ -169,7 +169,7 @@ class UltimateTicTacToeGameState:
         self.winner = ''
         self.finished = False
 
-    def print_ascii(self) -> None:
+    def __str__(self) -> str:
         # Helper to fetch a cell by subgame + position
         def cell(sg, pos):
             return getattr(sg, pos) or '.'
@@ -303,26 +303,32 @@ class UltimateTicTacToeGameState:
             ],
         ]
 
+        lines = []
         for r in rows:
             if r == 'HSEP':
-                print('===========++===========++===========')
+                lines.append('===========++===========++===========')
             else:
-                print(
+                lines.append(
                     f" {r[0]} | {r[1]} | {r[2]} || "
                     f"{r[4]} | {r[5]} | {r[6]} || "
                     f"{r[8]} | {r[9]} | {r[10]}"
                 )
 
-        print("\n--- Game Status ---")
+        lines.append("\n--- Game Status ---")
         if self.finished:
             if self.winner:
-                print(f"Winner: {self.winner}")
+                lines.append(f"Winner: {self.winner}")
             else:
-                print("Result: DRAW")
+                lines.append("Result: DRAW")
         else:
-            print("In progress")
-            print(f"Turn: {self.turn}")
-            print(f"Active Corner: {self.activeCorner}")
+            lines.append("In progress")
+            lines.append(f"Turn: {self.turn}")
+            lines.append(f"Active Corner: {self.activeCorner}")
+
+        return '\n'.join(lines)
+
+    def print_ascii(self) -> None:
+        print(self)
 
     def copy(self) -> UltimateTicTacToeGameState:
         return UltimateTicTacToeGameState(
@@ -363,5 +369,8 @@ class UltimateTicTacToe:
             ],
         )
 
+    def __str__(self) -> str:
+        return str(self.current_game)
+
     def print_ascii(self) -> None:
-        self.current_game.print_ascii()
+        print(self)

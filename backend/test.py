@@ -17,13 +17,13 @@ def main():
         name="Player X",
         username="player_x_final",
         email="x_final@example.com",
-        hashed_password="hashed_password_x"
+        password="password_x_123"
     )
     user_o = user_service.create_user(
         name="Player O",
         username="player_o_final",
         email="o_final@example.com",
-        hashed_password="hashed_password_o"
+        password="password_o_123"
     )
     print(f"Created users: {user_x.name} (ID: {user_x.id}), {user_o.name} (ID: {user_o.id})")
 

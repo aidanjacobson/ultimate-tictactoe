@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
@@ -14,19 +14,18 @@ class UserCreate(BaseModel):
     name: str
     username: str
     email: str
-    hashed_password: str
+    password: str
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     username: Optional[str] = None
     email: Optional[str] = None
-    hashed_password: Optional[str] = None
+    password: Optional[str] = None
 
 class UserResponse(BaseModel):
     id: int
     name: str
     username: str
-    email: str
 
     class Config:
         from_attributes = True
@@ -46,17 +45,6 @@ class GameResponse(BaseModel):
     o_user_id: int
     finished: bool
     winner_id: Optional[int]
-
-    class Config:
-        from_attributes = True
-
-class GameStateResponse(BaseModel):
-    id: int
-    x_user_id: int
-    o_user_id: int
-    finished: bool
-    winner_id: Optional[int]
-    state: Dict[str, Any]
 
     class Config:
         from_attributes = True
@@ -98,7 +86,7 @@ class Server:
                     name=user.name,
                     username=user.username,
                     email=user.email,
-                    hashed_password=user.hashed_password
+                    password=user.password
                 )
                 return UserResponse.from_orm(new_user)
             except Exception as e:
@@ -208,6 +196,20 @@ class Server:
                 "winner_id": game_record.winner_id,
                 "state": game_data
             }
+
+        @self.app.get("/api/games/{game_id}/ascii", response_model=str)
+        async def get_game_ascii(game_id: int):
+            """Get a game's ASCII representation"""
+            game_record = self.db.query(Game).filter(Game.id == game_id).first()
+            if not game_record:
+                raise HTTPException(status_code=404, detail="Game not found")
+            
+            # Load the game state from file
+            game = self.game_file_service.load_game(game_id)
+            if not game:
+                raise HTTPException(status_code=400, detail="Could not load game state")
+            
+            return PlainTextResponse(content=str(game))
 
         @self.app.get("/api/games", response_model=List[GameResponse])
         async def list_games():
