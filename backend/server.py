@@ -69,9 +69,9 @@ class Server:
         self.game_file_service = GameFileService()
         self.db = SessionLocal()
 
+        self._setup_routes()
         self._ensure_www()
         self._setup_static()
-        self._setup_routes()
 
     
     def _ensure_www(self):
