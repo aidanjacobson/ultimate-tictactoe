@@ -82,6 +82,11 @@ class Server:
 
     def _setup_routes(self):
         """Setup all API routes"""
+
+        @self.app.get("/api/health")
+        async def health_check():
+            """Health check endpoint"""
+            return JSONResponse(content={"status": "ok"})
         
         # ===== User Routes =====
         
