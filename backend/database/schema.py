@@ -39,6 +39,18 @@ class User(Base):
     games_as_o = relationship("Game", foreign_keys="Game.o_user_id", back_populates="o_user")
     games_won = relationship("Game", foreign_keys="Game.winner_id", back_populates="winner")
 
+class UserInvitation(Base):
+    __tablename__ = "user_invitations"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    inviter_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    invite_code = Column(String, nullable=False, unique=True)
+    used = Column(Boolean, default=False)
+    used_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(Integer, nullable=False)
+    expiry_at = Column(Integer, nullable=False)
+    used_at = Column(Integer, nullable=True)
+
 
 class Game(Base):
     __tablename__ = "games"
