@@ -33,6 +33,7 @@ class User(Base):
     email = Column(String, nullable=False, unique=True)
     hashed_password = Column(String, nullable=False)
     deleted = Column(Boolean, default=False)
+    admin = Column(Boolean, default=False)
 
     # Relationships
     games_as_x = relationship("Game", foreign_keys="Game.x_user_id", back_populates="x_user")

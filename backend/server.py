@@ -1,13 +1,16 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from services.UserService import UserService
-from services.GameFileService import GameFileService
+from services.GameService import GameService
 from database.schema import SessionLocal, Game, User
+from auth import create_token, auth_none, auth_logged_in, auth_as_id, auth_admin, auth_as_id_in_game, get_current_auth_context, AuthContext, require_logged_in, require_admin, require_as_id, require_as_id_in_game
 
 import os
+
+sessions = {}
 
 # Pydantic models for request/response
 class UserCreate(BaseModel):
@@ -15,6 +18,7 @@ class UserCreate(BaseModel):
     username: str
     email: str
     password: str
+    admin: bool = False
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
@@ -49,13 +53,24 @@ class GameResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+class LoginResponse(BaseModel):
+    token: str
+    user: UserResponse
+
 
 class Server:
     def __init__(self):
         self.app = FastAPI()
         self.user_service = UserService()
-        self.game_file_service = GameFileService()
+        self.game_service = GameService()
         self.db = SessionLocal()
+
+        # Add auth middleware - REMOVED, using per-route enforcement instead
+        # self.app.add_middleware(AuthMiddleware)
 
         self._setup_routes()
         self._ensure_www()
@@ -72,51 +87,95 @@ class Server:
         """Setup all API routes"""
 
         @self.app.get("/api/health")
-        async def health_check():
+        @auth_none()
+        async def health_check(auth_context: AuthContext = Depends(get_current_auth_context)):
             """Health check endpoint"""
             return JSONResponse(content={"status": "ok"})
         
         # ===== User Routes =====
         
+        @self.app.post("/api/login", response_model=LoginResponse)
+        @auth_none()
+        async def login(body: LoginRequest, auth_context: AuthContext = Depends(get_current_auth_context)):
+            """Authenticate a user and return JWT token"""
+            try:
+                user = self.user_service.authenticate_user(body.username, body.password)
+                if not user:
+                    raise HTTPException(status_code=401, detail="Invalid credentials")
+                
+                token = create_token(user.id)
+                return {
+                    "token": token,
+                    "user": UserResponse.from_orm(user)
+                }
+            except HTTPException:
+                raise
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=str(e))
+        
         @self.app.post("/api/users", response_model=UserResponse)
-        async def create_user(user: UserCreate):
+        @auth_admin()
+        async def create_user(user: UserCreate, auth_context: AuthContext = Depends(get_current_auth_context)):
             """Create a new user"""
+            # Enforce admin requirement
+            require_admin(auth_context)
+            
             try:
                 new_user = self.user_service.create_user(
                     name=user.name,
                     username=user.username,
                     email=user.email,
-                    password=user.password
+                    password=user.password,
+                    admin=user.admin
                 )
                 return UserResponse.from_orm(new_user)
             except Exception as e:
                 raise HTTPException(status_code=400, detail=str(e))
 
-        @self.app.get("/api/users/{user_id}", response_model=UserResponse)
-        async def get_user(user_id: int):
+        @self.app.get("/api/users/{user_id}", response_model=UserResponse) 
+        @auth_logged_in()
+        async def get_user(user_id: int, auth_context: AuthContext = Depends(get_current_auth_context)):
             """Get a user by ID"""
+            # Enforce logged in requirement
+            require_logged_in(auth_context)
+            
             user = self.user_service.get_user_by_id(user_id)
             if not user:
                 raise HTTPException(status_code=404, detail="User not found")
             return UserResponse.from_orm(user)
 
         @self.app.get("/api/users", response_model=List[UserResponse])
-        async def list_users():
+        @auth_logged_in()
+        async def list_users(auth_context: AuthContext = Depends(get_current_auth_context)):
             """List all users"""
+            # Enforce auth requirement
+            require_logged_in(auth_context)
+            
+            print(f"\n[ROUTE HANDLER] list_users called")
+            print(f"[ROUTE HANDLER] auth_context: user_id={auth_context.user_id}, is_admin={auth_context.is_admin}")
             users = self.user_service.get_all_users()
+            print(f"[ROUTE HANDLER] Found {len(users)} users")
             return [UserResponse.from_orm(u) for u in users]
 
         @self.app.get("/api/users/username/{username}", response_model=UserResponse)
-        async def get_user_by_username(username: str):
+        @auth_logged_in()
+        async def get_user_by_username(username: str, auth_context: AuthContext = Depends(get_current_auth_context)):
             """Get a user by username"""
+            # Enforce logged in requirement
+            require_logged_in(auth_context)
+            
             user = self.user_service.get_user_by_username(username)
             if not user:
                 raise HTTPException(status_code=404, detail="User not found")
             return UserResponse.from_orm(user)
 
         @self.app.put("/api/users/{user_id}", response_model=UserResponse)
-        async def update_user(user_id: int, user: UserUpdate):
+        @auth_as_id(param_name="user_id")
+        async def update_user(user_id: int, user: UserUpdate, auth_context: AuthContext = Depends(get_current_auth_context)):
             """Update a user"""
+            # Enforce as_id requirement
+            require_as_id(auth_context, user_id)
+            
             update_data = user.dict(exclude_unset=True)
             updated_user = self.user_service.update_user(user_id, **update_data)
             if not updated_user:
@@ -124,8 +183,12 @@ class Server:
             return UserResponse.from_orm(updated_user)
 
         @self.app.delete("/api/users/{user_id}")
-        async def delete_user(user_id: int):
+        @auth_as_id(param_name="user_id")
+        async def delete_user(user_id: int, auth_context: AuthContext = Depends(get_current_auth_context)):
             """Delete a user (soft delete)"""
+            # Enforce as_id requirement
+            require_as_id(auth_context, user_id)
+            
             success = self.user_service.delete_user(user_id)
             if not success:
                 raise HTTPException(status_code=404, detail="User not found")
@@ -134,127 +197,79 @@ class Server:
         # ===== Game Routes =====
 
         @self.app.post("/api/games", response_model=Dict[str, Any])
-        async def create_game(game: GameCreate):
+        @auth_logged_in()
+        async def create_game(game: GameCreate, auth_context: AuthContext = Depends(get_current_auth_context)):
             """Create a new game"""
+            # Enforce logged in requirement
+            require_logged_in(auth_context)
+            
             try:
-                # Verify users exist
-                user_x = self.user_service.get_user_by_id(game.x_user_id)
-                user_o = self.user_service.get_user_by_id(game.o_user_id)
-                
-                if not user_x or not user_o:
-                    raise HTTPException(status_code=404, detail="One or both users not found")
-                
-                # Create game record in database
-                game_record = Game(
+                return self.game_service.create_game(
                     x_user_id=game.x_user_id,
-                    o_user_id=game.o_user_id,
-                    finished=False
+                    o_user_id=game.o_user_id
                 )
-                self.db.add(game_record)
-                self.db.commit()
-                self.db.refresh(game_record)
-                
-                # Initialize game via GameFileService
-                game_state = self.game_file_service.start_new_game(game_record.id)
-                
-                # Serialize game state
-                game_data = self.game_file_service._serialize_game(game_state)
-                
-                return {
-                    "id": game_record.id,
-                    "x_user_id": game_record.x_user_id,
-                    "o_user_id": game_record.o_user_id,
-                    "finished": game_record.finished,
-                    "winner_id": game_record.winner_id,
-                    "state": game_data
-                }
-            except HTTPException:
-                raise
             except Exception as e:
                 raise HTTPException(status_code=400, detail=str(e))
 
         @self.app.get("/api/games/{game_id}", response_model=Dict[str, Any])
-        async def get_game(game_id: int):
+        @auth_as_id_in_game(game_id_param="game_id")
+        async def get_game(game_id: int, auth_context: AuthContext = Depends(get_current_auth_context)):
             """Get a game by ID with full state"""
-            game_record = self.db.query(Game).filter(Game.id == game_id).first()
-            if not game_record:
-                raise HTTPException(status_code=404, detail="Game not found")
+            # Enforce as_id_in_game requirement
+            require_as_id_in_game(auth_context, game_id)
             
-            # Load the game state from file
-            game = self.game_file_service.load_game(game_id)
-            if not game:
-                raise HTTPException(status_code=400, detail="Could not load game state")
-            
-            # Serialize game state
-            game_data = self.game_file_service._serialize_game(game)
-            
-            return {
-                "id": game_record.id,
-                "x_user_id": game_record.x_user_id,
-                "o_user_id": game_record.o_user_id,
-                "finished": game_record.finished,
-                "winner_id": game_record.winner_id,
-                "state": game_data
-            }
+            try:
+                return self.game_service.get_game(game_id)
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=str(e))
 
         @self.app.get("/api/games/{game_id}/ascii", response_model=str)
-        async def get_game_ascii(game_id: int):
+        @auth_as_id_in_game(game_id_param="game_id")
+        async def get_game_ascii(game_id: int, auth_context: AuthContext = Depends(get_current_auth_context)):
             """Get a game's ASCII representation"""
-            game_record = self.db.query(Game).filter(Game.id == game_id).first()
-            if not game_record:
-                raise HTTPException(status_code=404, detail="Game not found")
+            # Enforce as_id_in_game requirement
+            require_as_id_in_game(auth_context, game_id)
             
-            # Load the game state from file
-            game = self.game_file_service.load_game(game_id)
-            if not game:
-                raise HTTPException(status_code=400, detail="Could not load game state")
-            
-            return PlainTextResponse(content=str(game))
+            try:
+                return PlainTextResponse(content=self.game_service.get_game_ascii(game_id))
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=str(e))
 
         @self.app.get("/api/games", response_model=List[GameResponse])
-        async def list_games():
+        @auth_admin()
+        async def list_games(auth_context: AuthContext = Depends(get_current_auth_context)):
             """List all games"""
-            games = self.db.query(Game).all()
+            # Enforce admin requirement
+            require_admin(auth_context)
+            
+            games = self.game_service.list_games()
+            return [GameResponse.from_orm(g) for g in games]
+
+        
+        @self.app.get("/api/games/user/{user_id}", response_model=List[GameResponse])
+        @auth_as_id(param_name="user_id")
+        async def list_games_by_user(user_id: int, auth_context: AuthContext = Depends(get_current_auth_context)):
+            """List all games for a specific user"""
+            # Enforce as_id requirement
+            require_as_id(auth_context, user_id)
+            
+            games = self.game_service.list_games_by_user(user_id)
             return [GameResponse.from_orm(g) for g in games]
 
         @self.app.post("/api/games/{game_id}/turn", response_model=Dict[str, Any])
-        async def take_turn(game_id: int, turn: GameTurn):
+        @auth_as_id_in_game(game_id_param="game_id")
+        async def take_turn(game_id: int, turn: GameTurn, auth_context: AuthContext = Depends(get_current_auth_context)):
             """Execute a turn in a game"""
+            # Enforce as_id_in_game requirement
+            require_as_id_in_game(auth_context, game_id)
+            
             try:
-                game_record = self.db.query(Game).filter(Game.id == game_id).first()
-                if not game_record:
-                    raise HTTPException(status_code=404, detail="Game not found")
-                
-                # Load the game state from file
-                game = self.game_file_service.load_game(game_id)
-                if not game:
-                    raise HTTPException(status_code=400, detail="Could not load game state")
-                
-                # Execute turn
-                self.game_file_service.take_turn(
+                return self.game_service.take_turn(
                     game_id=game_id,
-                    game=game,
                     player=turn.player,
                     corner=turn.corner,
                     position=turn.position
                 )
-                
-                # Refresh game record from database in case it was updated
-                self.db.refresh(game_record)
-                
-                # Serialize updated game state
-                game_data = self.game_file_service._serialize_game(game)
-                
-                return {
-                    "id": game_record.id,
-                    "x_user_id": game_record.x_user_id,
-                    "o_user_id": game_record.o_user_id,
-                    "finished": game_record.finished,
-                    "winner_id": game_record.winner_id,
-                    "state": game_data
-                }
-            except HTTPException:
-                raise
             except Exception as e:
                 raise HTTPException(status_code=400, detail=str(e))
 

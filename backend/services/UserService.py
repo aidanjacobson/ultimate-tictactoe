@@ -7,7 +7,7 @@ class UserService:
     def __init__(self):
         self.db = SessionLocal()
 
-    def create_user(self, name: str, username: str, email: str, password: str) -> User:
+    def create_user(self, name: str, username: str, email: str, password: str, admin: bool = False) -> User:
         """
         Create a new user.
         
@@ -16,6 +16,7 @@ class UserService:
             username: The unique username
             email: The user's email address
             password: The plain password (will be hashed)
+            admin: Whether the user is an admin (default: False)
         
         Returns:
             The created User object
@@ -27,7 +28,8 @@ class UserService:
             name=name,
             username=username,
             email=email,
-            hashed_password=hashed_password
+            hashed_password=hashed_password,
+            admin=admin
         )
         self.db.add(user)
         self.db.commit()
@@ -79,6 +81,27 @@ class UserService:
         """
         return self.db.query(User).filter(User.deleted == False).all()
 
+    def authenticate_user(self, username: str, password: str) -> Optional[User]:
+        """
+        Authenticate a user by username and password.
+        
+        Args:
+            username: The username
+            password: The plain password to verify
+        
+        Returns:
+            The User object if authentication succeeds, None otherwise
+        """
+        user = self.get_user_by_username(username)
+        if not user:
+            return None
+        
+        # Verify the password against the hashed password
+        if bcrypt.checkpw(password.encode('utf-8'), user.hashed_password.encode('utf-8')):
+            return user
+        
+        return None
+
     def update_user(self, user_id: int, **kwargs) -> Optional[User]:
         """
         Update a user's information.
@@ -95,7 +118,7 @@ class UserService:
             return None
         
         for key, value in kwargs.items():
-            if hasattr(user, key) and key in ['name', 'username', 'email', 'password']:
+            if hasattr(user, key) and key in ['name', 'username', 'email', 'password', 'admin']:
                 if key == 'password':
                     # Hash the password if it's being updated
                     setattr(user, 'hashed_password', bcrypt.hashpw(value.encode('utf-8'), bcrypt.gensalt()).decode('utf-8'))
