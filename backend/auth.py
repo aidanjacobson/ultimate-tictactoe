@@ -161,6 +161,13 @@ def auth_as_id_in_game(game_id_param: str = "game_id"):
         return func
     return decorator
 
+def auth_as_inviter(invite_id_param: str = "invite_id"):
+    """Route requires user to be the inviter of the specified invite (invite_id path param) or be admin"""
+    def decorator(func: Callable) -> Callable:
+        func._auth_type = "as_inviter"
+        func._auth_param = invite_id_param
+        return func
+    return decorator
 
 # ===== Auth enforcement helpers =====
 
@@ -225,4 +232,30 @@ def require_as_id_in_game(auth_context: AuthContext, game_id: int):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You are not a player in this game"
+        )
+
+def require_as_inviter(auth_context: AuthContext, invite_id: int):
+    """Check that user is the inviter of the specified invite or is admin"""
+    from database.schema import SessionLocal, UserInvite
+    
+    if auth_context.user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
+    
+    db = SessionLocal()
+    invite = db.query(UserInvite).filter(UserInvite.id == invite_id).first()
+    db.close()
+    
+    if not invite:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Invite not found"
+        )
+    
+    if auth_context.user_id != invite.invited_by_id and not auth_context.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not the inviter of this invite"
         )

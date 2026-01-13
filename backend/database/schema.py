@@ -55,6 +55,18 @@ class Game(Base):
     o_user = relationship("User", foreign_keys=[o_user_id], back_populates="games_as_o")
     winner = relationship("User", foreign_keys=[winner_id], back_populates="games_won")
 
+class UserInvite(Base):
+    __tablename__ = "user_invites"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    invite_code = Column(String, nullable=False, unique=True)
+    invited_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    used = Column(Boolean, default=False)
+    used_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(Integer, nullable=False)  # Unix timestamp
+    expires_at = Column(Integer, nullable=False)  # Unix timestamp
+    used_at = Column(Integer, nullable=True)  # Unix timestamp
+
 # ===== Init helper =====
 
 def init_db():

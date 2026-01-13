@@ -5,8 +5,9 @@ from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from services.UserService import UserService
 from services.GameService import GameService
+from services.UserInviteService import UserInviteService
 from database.schema import SessionLocal, Game, User
-from auth import create_token, auth_none, auth_logged_in, auth_as_id, auth_admin, auth_as_id_in_game, get_current_auth_context, AuthContext, require_logged_in, require_admin, require_as_id, require_as_id_in_game
+from auth import create_token, auth_none, auth_logged_in, auth_as_id, auth_admin, auth_as_id_in_game, auth_as_inviter, get_current_auth_context, AuthContext, require_logged_in, require_admin, require_as_id, require_as_id_in_game, require_as_inviter
 
 import os
 
@@ -33,6 +34,27 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class UserInviteCreate(BaseModel):
+    invite_code: Optional[str] = None
+    expiry_days: float = 7
+
+class UserInviteResponse(BaseModel):
+    id: int
+    invite_code: str
+    created_at: int
+    expires_at: int
+    used: bool
+
+    class Config:
+        from_attributes = True
+
+class UserInviteUse(BaseModel):
+    invite_code: str
+    name: str
+    username: str
+    email: str
+    password: str
 
 class GameCreate(BaseModel):
     x_user_id: int
@@ -67,6 +89,7 @@ class Server:
         self.app = FastAPI()
         self.user_service = UserService()
         self.game_service = GameService()
+        self.user_invite_service = UserInviteService(self.user_service)
         self.db = SessionLocal()
 
         # Add auth middleware - REMOVED, using per-route enforcement instead
@@ -194,9 +217,68 @@ class Server:
                 raise HTTPException(status_code=404, detail="User not found")
             return {"message": "User deleted"}
 
+        # ===== User Invite Routes =====
+
+        @self.app.post("/api/invite")
+        @auth_admin()
+        async def create_user_invite(user_invite_create: UserInviteCreate, auth_context: AuthContext = Depends(get_current_auth_context)):
+            """Create a new user invite"""
+            # Enforce admin requirement
+            require_admin(auth_context)
+            
+            try:
+                user_invite = self.user_invite_service.create_user_invite(
+                    invited_by_id=auth_context.user_id,
+                    invite_code=user_invite_create.invite_code,
+                    expiry_days=user_invite_create.expiry_days
+                )
+                return UserInviteResponse.from_orm(user_invite)
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=str(e))
+
+        @self.app.get("/api/invite/{invite_id}", response_model=UserInviteResponse)
+        @auth_as_inviter(invite_id_param="invite_id")
+        async def get_user_invite(invite_id: int, auth_context: AuthContext = Depends(get_current_auth_context)):
+            """Get a user invite by ID"""
+            # Enforce as_inviter requirement
+            require_as_inviter(auth_context, invite_id)
+            
+            user_invite = self.user_invite_service.get_user_invite(invite_id)
+            if not user_invite:
+                raise HTTPException(status_code=404, detail="Invite not found")
+            return UserInviteResponse.from_orm(user_invite)
+
+        @self.app.delete("/api/invite/{invite_id}")
+        @auth_as_inviter(invite_id_param="invite_id")
+        async def delete_user_invite(invite_id: int, auth_context: AuthContext = Depends(get_current_auth_context)):
+            """Delete a user invite by ID"""
+            # Enforce as_inviter requirement
+            require_as_inviter(auth_context, invite_id)
+            
+            success = self.user_invite_service.delete_user_invite(invite_id)
+            if not success:
+                raise HTTPException(status_code=404, detail="Invite not found")
+            return {"message": "Invite deleted"}
+
+        @self.app.post("/api/invite/use", response_model=UserInviteResponse)
+        @auth_none()
+        async def use_user_invite(user_invite_use: UserInviteUse, auth_context: AuthContext = Depends(get_current_auth_context)):
+            """Use a user invite to create a new user"""
+            try:
+                user_invite = self.user_invite_service.use_user_invite(
+                    invite_code=user_invite_use.invite_code,
+                    name=user_invite_use.name,
+                    username=user_invite_use.username,
+                    email=user_invite_use.email,
+                    password=user_invite_use.password
+                )
+                return UserInviteResponse.from_orm(user_invite)
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=str(e))
+
         # ===== Game Routes =====
 
-        @self.app.post("/api/games", response_model=Dict[str, Any])
+        @self.app.post("/api/games", response_model=GameResponse)
         @auth_logged_in()
         async def create_game(game: GameCreate, auth_context: AuthContext = Depends(get_current_auth_context)):
             """Create a new game"""
@@ -211,7 +293,7 @@ class Server:
             except Exception as e:
                 raise HTTPException(status_code=400, detail=str(e))
 
-        @self.app.get("/api/games/{game_id}", response_model=Dict[str, Any])
+        @self.app.get("/api/games/{game_id}", response_model=GameResponse)
         @auth_as_id_in_game(game_id_param="game_id")
         async def get_game(game_id: int, auth_context: AuthContext = Depends(get_current_auth_context)):
             """Get a game by ID with full state"""
@@ -256,7 +338,7 @@ class Server:
             games = self.game_service.list_games_by_user(user_id)
             return [GameResponse.from_orm(g) for g in games]
 
-        @self.app.post("/api/games/{game_id}/turn", response_model=Dict[str, Any])
+        @self.app.post("/api/games/{game_id}/turn", response_model=GameResponse)
         @auth_as_id_in_game(game_id_param="game_id")
         async def take_turn(game_id: int, turn: GameTurn, auth_context: AuthContext = Depends(get_current_auth_context)):
             """Execute a turn in a game"""
