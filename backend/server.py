@@ -101,6 +101,8 @@ class GameInviteResponse(BaseModel):
     preferred_symbol: Optional[str]
     reviewed: bool
     accepted: Optional[bool]
+    from_user: Optional[UserResponse] = None
+    to_user: Optional[UserResponse] = None
 
     class Config:
         from_attributes = True
@@ -375,6 +377,63 @@ class Server:
             games = self.game_service.list_games_by_user(user_id)
             return [GameResponse.from_orm(g) for g in games]
 
+        @self.app.get("/api/games/user/{user_id}/your-turn", response_model=List[GameResponse])
+        @auth_as_id(param_name="user_id")
+        async def list_games_user_turn(user_id: int, auth_context: AuthContext = Depends(get_current_auth_context)):
+            """List games where it's the user's turn"""
+            # Enforce as_id requirement
+            require_as_id(auth_context, user_id)
+            
+            games = self.game_service.list_games_user_turn(user_id)
+            result = []
+            for g in games:
+                try:
+                    game_data = self.game_service.get_game(g.id)
+                    result.append(game_data)
+                except Exception as e:
+                    # Skip games that fail to load
+                    print(f"Error loading game {g.id}: {e}")
+            return result
+            return result
+
+        @self.app.get("/api/games/user/{user_id}/opponent-turn", response_model=List[GameResponse])
+        @auth_as_id(param_name="user_id")
+        async def list_games_opponent_turn(user_id: int, auth_context: AuthContext = Depends(get_current_auth_context)):
+            """List games where it's the opponent's turn"""
+            # Enforce as_id requirement
+            require_as_id(auth_context, user_id)
+            
+            games = self.game_service.list_games_opponent_turn(user_id)
+            result = []
+            for g in games:
+                try:
+                    game_data = self.game_service.get_game(g.id)
+                    result.append(game_data)
+                except Exception as e:
+                    # Skip games that fail to load
+                    print(f"Error loading game {g.id}: {e}")
+            return result
+            return result
+
+        @self.app.get("/api/games/user/{user_id}/finished", response_model=List[GameResponse])
+        @auth_as_id(param_name="user_id")
+        async def list_games_finished(user_id: int, auth_context: AuthContext = Depends(get_current_auth_context)):
+            """List finished games for a user"""
+            # Enforce as_id requirement
+            require_as_id(auth_context, user_id)
+            
+            games = self.game_service.list_games_finished(user_id)
+            result = []
+            for g in games:
+                try:
+                    game_data = self.game_service.get_game(g.id)
+                    result.append(game_data)
+                except Exception as e:
+                    # Skip games that fail to load
+                    print(f"Error loading game {g.id}: {e}")
+            return result
+            return result
+
         @self.app.post("/api/games/{game_id}/turn", response_model=GameResponse)
         @auth_as_id_in_game(game_id_param="game_id")
         async def take_turn(game_id: int, turn: GameTurn, auth_context: AuthContext = Depends(get_current_auth_context)):
@@ -424,6 +483,19 @@ class Server:
                 return invite
             except ValueError as e:
                 raise HTTPException(status_code=404, detail=str(e))
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
+
+        @self.app.get("/api/game-invites/user/{user_id}", response_model=List[GameInviteResponse])
+        @auth_as_id(param_name="user_id")
+        async def list_game_invites_for_user(user_id: int, auth_context: AuthContext = Depends(get_current_auth_context)):
+            """Get all pending game invites for a user (as recipient)"""
+            # Enforce as_id requirement
+            require_as_id(auth_context, user_id)
+            
+            try:
+                invites = self.game_invite_service.get_invites_for_user(user_id)
+                return invites
             except Exception as e:
                 raise HTTPException(status_code=500, detail=str(e))
 

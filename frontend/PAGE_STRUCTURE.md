@@ -51,7 +51,7 @@
 ---
 
 ### 2. Dashboard / Home Page
-**Route**: `/dashboard` or `/`  
+**Route**: `/`  
 **Purpose**: Main hub - overview of user's games, quick actions  
 **Auth Required**: Yes  
 **Layout**: 2-3 column grid

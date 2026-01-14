@@ -2,7 +2,7 @@ import { FC, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ApiService from '../../../services/ApiService';
 import UltimateTicTacToeGameBoard from '../../GameBoard/UltimateTicTacToeGameBoard';
-import type { GameResponse, Player } from '../../../datamodels/tictactoe';
+import type { GameResponse, Player, Position } from '../../../datamodels/tictactoe';
 import type { UserResponse } from '../../../datamodels/users';
 import styles from './GameplayPage.module.scss';
 
@@ -113,8 +113,8 @@ const GameplayPage: FC = () => {
       const playerSymbol = getCurrentPlayerSymbol();
       const updatedGame = await ApiService.takeTurn(parseInt(gameId), {
         player: playerSymbol,
-        corner,
-        position,
+        corner: corner as Position,
+        position: position as Position,
       });
 
       // Update game state with successful move

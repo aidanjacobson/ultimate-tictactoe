@@ -1,5 +1,6 @@
 import type { GameCreate, GameResponse, GameTurn } from "../datamodels/tictactoe";
 import type { UserCreate, UserResponse, UserUpdate } from "../datamodels/users";
+import type { GameInviteResponse } from "../datamodels/gameinvites";
 
 const API_BASE = "/api"
 const TOKEN_KEY = 'auth_token'
@@ -98,6 +99,11 @@ export class ApiService {
     static async getGameInvite(inviteId: number): Promise<any> {
         return this.request('GET', `/game-invites/${inviteId}`);
     }
+
+    static async getGameInvitesForUser(userId: number): Promise<GameInviteResponse[]> {
+        return this.request('GET', `/game-invites/user/${userId}`);
+    }
+
     static async acceptGameInvite(inviteId: number, preferredSymbol?: string): Promise<any> {
         return this.request('POST', `/game-invites/${inviteId}/accept`, {
             preferred_symbol: preferredSymbol || null,
@@ -166,6 +172,18 @@ export class ApiService {
 
     static async getGames(): Promise<GameResponse[]> {
         return this.request('GET', '/games');
+    }
+
+    static async getGamesUserTurn(userId: number): Promise<GameResponse[]> {
+        return this.request('GET', `/games/user/${userId}/your-turn`);
+    }
+
+    static async getGamesOpponentTurn(userId: number): Promise<GameResponse[]> {
+        return this.request('GET', `/games/user/${userId}/opponent-turn`);
+    }
+
+    static async getGamesFinished(userId: number): Promise<GameResponse[]> {
+        return this.request('GET', `/games/user/${userId}/finished`);
     }
     
     static async takeTurn(gameId: number, turn: GameTurn): Promise<GameResponse> {

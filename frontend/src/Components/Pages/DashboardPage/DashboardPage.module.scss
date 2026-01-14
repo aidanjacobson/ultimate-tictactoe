@@ -44,27 +44,95 @@
     margin-bottom: $spacing-lg;
     color: $color-primary;
   }
+}
+
+.gamesList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $spacing-md;
+
+  @include tablet-and-up {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include desktop-and-up {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.inviteList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.inviteCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md;
+  background-color: $color-bg-secondary;
+  border-radius: 4px;
+  border-left: 4px solid $color-primary;
+
+  @include tablet-and-up {
+    flex-direction: row;
+    padding: $spacing-lg;
+  }
+}
+
+.inviteText {
+  @include body-text;
+  color: $color-text-secondary;
+  margin: 0;
+  flex: 1;
+}
+
+.button {
+  @include button-base;
+  background-color: $color-primary;
+  color: white;
+  padding: $spacing-sm $spacing-md;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-top: $spacing-sm;
+
+  @include tablet-and-up {
+    margin-top: 0;
+    margin-left: $spacing-md;
+  }
+
+  &:hover {
+    background-color: darken($color-primary, 10%);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.loading,
+.error {
+  @include body-text;
+  text-align: center;
+  padding: $spacing-xl;
+}
+
+.error {
+  color: #d32f2f;
+}
+
+.emptyState {
+  text-align: center;
+  padding: $spacing-2xl;
+  background-color: $color-bg-secondary;
+  border-radius: 4px;
 
   p {
     @include body-text;
-    margin-bottom: $spacing-md;
     color: $color-text-secondary;
-  }
-
-  ul {
-    list-style: none;
-    padding: 0;
     margin: 0;
-
-    li {
-      @include body-text;
-      padding: $spacing-md 0;
-      border-bottom: 1px solid $color-bg-tertiary;
-      color: $color-text-secondary;
-
-      &:last-child {
-        border-bottom: none;
-      }
-    }
   }
 }

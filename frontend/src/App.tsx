@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useLocation, useNavigate, BrowserRouter } from 'react-router-dom'
 import { AppRoutes } from './router'
-import AppLayout from './components/shared/AppLayout/AppLayout'
+import AppLayout from './Components/shared/AppLayout/AppLayout'
 import ApiService from './services/ApiService'
 import './App.css'
 

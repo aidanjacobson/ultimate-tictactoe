@@ -12,7 +12,7 @@ const SuccessModal: FC<SuccessModalProps> = ({ message, onClose }) => {
 
   const handleReturnToDashboard = () => {
     onClose();
-    navigate('/dashboard');
+    navigate('/');
   };
 
   return (

@@ -112,6 +112,27 @@
   }
 }
 
+.inviteGameButton {
+  @include button-base;
+  background-color: $color-secondary;
+  color: $color-text-inverse;
+  border: none;
+  padding: $spacing-sm $spacing-lg;
+  flex-shrink: 0;
+  transition: all $transition-fast;
+
+  &:hover {
+    background-color: $color-secondary-dark;
+  }
+
+  &:active {
+    background-color: $color-secondary-dark;
+    transform: scale(0.98);
+  }
+}
+
+
+
 .logoutButton {
   @include button-base;
   background-color: transparent;

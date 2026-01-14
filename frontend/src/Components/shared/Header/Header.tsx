@@ -18,7 +18,7 @@ const Header: FC = () => {
 
   const isActive = (path: string): boolean => {
     if (path === '/') {
-      return location.pathname === '/' || location.pathname === '/dashboard';
+      return location.pathname === '/';
     }
     return location.pathname.startsWith(path);
   };
@@ -43,7 +43,7 @@ const Header: FC = () => {
           >
             Dashboard
           </a>
-          <a
+          {/* <a
             href="/leaderboard"
             className={`${styles.navLink} ${isActive('/leaderboard') ? styles.active : ''}`}
             onClick={(e) => {
@@ -62,11 +62,17 @@ const Header: FC = () => {
             }}
           >
             Inbox
-          </a>
+          </a> */}
         </nav>
 
         {/* Action Buttons */}
         <div className={styles.actions}>
+           <button 
+            className={styles.inviteGameButton} 
+            onClick={() => navigate('/invites/game/create')}
+          >
+            Start New Game
+          </button>
           <button 
             className={styles.inviteButton} 
             onClick={() => navigate('/invites/user/create')}

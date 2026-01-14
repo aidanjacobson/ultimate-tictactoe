@@ -4,6 +4,7 @@ from services.GameFileService import GameFileService
 from services.UserService import UserService
 from services.NotificationService import NotificationService
 from database.schema import SessionLocal, Game
+from sqlalchemy.orm import joinedload
 
 
 class GameService:
@@ -140,9 +141,113 @@ class GameService:
         Returns:
             List of game records involving the user
         """
-        return self.db.query(Game).filter(
+        return self.db.query(Game).options(
+            joinedload(Game.x_user),
+            joinedload(Game.o_user)
+        ).filter(
             (Game.x_user_id == user_id) | (Game.o_user_id == user_id)
+        ).order_by(Game.updated_at.desc()).all()
+
+    def list_games_user_turn(self, user_id: int) -> list:
+        """
+        List games where it's the user's turn (and game is not finished).
+        
+        Args:
+            user_id: The user's ID
+        Returns:
+            List of game records sorted by updated_at descending
+        """
+        # Get all games where the user is a player and game is not finished
+        # Eagerly load relationships before detaching from session
+        games = self.db.query(Game).options(
+            joinedload(Game.x_user),
+            joinedload(Game.o_user)
+        ).filter(
+            (Game.x_user_id == user_id) | (Game.o_user_id == user_id),
+            Game.finished == False
         ).all()
+        
+        # Detach objects from session to free connection
+        self.db.expunge_all()
+        
+        # Filter to only games where it's the user's turn
+        user_turn_games = []
+        for game_record in games:
+            try:
+                game = self.game_file_service.load_game(game_record.id)
+                if game:
+                    # Determine if it's the user's turn
+                    is_user_x = game_record.x_user_id == user_id
+                    current_player_is_x = game.current_game.turn == 'X'
+                    
+                    if (is_user_x and current_player_is_x) or (not is_user_x and not current_player_is_x):
+                        user_turn_games.append(game_record)
+            except Exception:
+                # Skip games that can't be loaded
+                pass
+        
+        # Sort by updated_at descending
+        user_turn_games.sort(key=lambda g: g.updated_at, reverse=True)
+        return user_turn_games
+
+    def list_games_opponent_turn(self, user_id: int) -> list:
+        """
+        List games where it's the opponent's turn (and game is not finished).
+        
+        Args:
+            user_id: The user's ID
+        Returns:
+            List of game records sorted by updated_at descending
+        """
+        # Get all games where the user is a player and game is not finished
+        # Eagerly load relationships before detaching from session
+        games = self.db.query(Game).options(
+            joinedload(Game.x_user),
+            joinedload(Game.o_user)
+        ).filter(
+            (Game.x_user_id == user_id) | (Game.o_user_id == user_id),
+            Game.finished == False
+        ).all()
+        
+        # Detach objects from session to free connection
+        self.db.expunge_all()
+        
+        # Filter to only games where it's the opponent's turn
+        opponent_turn_games = []
+        for game_record in games:
+            try:
+                game = self.game_file_service.load_game(game_record.id)
+                if game:
+                    # Determine if it's the user's turn (if not, it's opponent's)
+                    is_user_x = game_record.x_user_id == user_id
+                    current_player_is_x = game.current_game.turn == 'X'
+                    
+                    if (is_user_x and not current_player_is_x) or (not is_user_x and current_player_is_x):
+                        opponent_turn_games.append(game_record)
+            except Exception:
+                # Skip games that can't be loaded
+                pass
+        
+        # Sort by updated_at descending
+        opponent_turn_games.sort(key=lambda g: g.updated_at, reverse=True)
+        return opponent_turn_games
+
+    def list_games_finished(self, user_id: int) -> list:
+        """
+        List finished games for a user.
+        
+        Args:
+            user_id: The user's ID
+        Returns:
+            List of finished game records sorted by updated_at descending
+        """
+        return self.db.query(Game).options(
+            joinedload(Game.x_user),
+            joinedload(Game.o_user)
+        ).filter(
+            (Game.x_user_id == user_id) | (Game.o_user_id == user_id),
+            Game.finished == True
+        ).order_by(Game.updated_at.desc()).all()
     
     def take_turn(self, game_id: int, player: str, corner: str, position: str) -> Dict[str, Any]:
         """

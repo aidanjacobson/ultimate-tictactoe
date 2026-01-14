@@ -24,7 +24,6 @@ export const AppRoutes = () => {
 
       {/* Main Dashboard / Landing Page */}
       <Route path="/" element={<DashboardPage />} />
-      <Route path="/dashboard" element={<DashboardPage />} />
 
       {/* Gameplay */}
       <Route path="/game/:gameId" element={<GameplayPage />} />

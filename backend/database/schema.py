@@ -7,8 +7,10 @@ from sqlalchemy import (
     String,
     ForeignKey,
     Text,
-    Boolean
+    Boolean,
+    DateTime
 )
+import datetime
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 
 DATA_DIR = os.environ.get("DATA_DIR", "./devdata")
@@ -18,8 +20,15 @@ DB_PATH = os.path.join(DB_DIR, "app.db")
 
 os.makedirs(DB_DIR, exist_ok=True)
 
-# SQLAlchemy setup
-engine = create_engine(f"sqlite:///{DB_PATH}", echo=False, future=True)
+# SQLAlchemy setup - increase pool size to handle concurrent requests
+engine = create_engine(
+    f"sqlite:///{DB_PATH}",
+    echo=False,
+    future=True,
+    connect_args={"timeout": 30},
+    pool_size=10,
+    max_overflow=20,
+)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 Base = declarative_base()
 
@@ -49,6 +58,8 @@ class Game(Base):
     o_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     finished = Column(Boolean, default=False)
     winner_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow, nullable=False)
 
     # Relationships
     x_user = relationship("User", foreign_keys=[x_user_id], back_populates="games_as_x")
@@ -88,6 +99,10 @@ class GameInviteRequest(Base):
     preferred_symbol = Column(String, nullable=True)  # 'X' or 'O'
     reviewed = Column(Boolean, default=False)
     accepted = Column(Boolean, nullable=True)  # Null if not reviewed yet
+
+    # Relationships
+    from_user = relationship("User", foreign_keys=[from_user_id])
+    to_user = relationship("User", foreign_keys=[to_user_id])
 
 # ===== Init helper =====
 

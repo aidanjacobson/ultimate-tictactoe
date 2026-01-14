@@ -80,7 +80,7 @@ const RespondToGameInvitePage: FC = () => {
     setErrorMessage('');
     try {
       await ApiService.declineGameInvite(parseInt(gameInviteId));
-      navigate('/dashboard');
+      navigate('/');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to decline invite. Please try again.';
       setErrorMessage(message);

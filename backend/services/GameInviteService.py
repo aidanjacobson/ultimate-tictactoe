@@ -2,6 +2,7 @@ import random
 from database.schema import SessionLocal, GameInviteRequest
 from services.GameService import GameService
 from services.NotificationService import NotificationService
+from sqlalchemy.orm import joinedload
 
 class GameInviteService:
     def __init__(self, game_service: GameService, notification_service: NotificationService):
@@ -100,3 +101,13 @@ class GameInviteService:
         # create the game and return it
         game_data = self.game_service.create_game(x_user_id=x_user_id, o_user_id=o_user_id)
         return game_data
+
+    def get_invites_for_user(self, user_id: int) -> list:
+        """Get all pending game invites for a user (as recipient)"""
+        return self.db.query(GameInviteRequest).options(
+            joinedload(GameInviteRequest.from_user),
+            joinedload(GameInviteRequest.to_user)
+        ).filter(
+            GameInviteRequest.to_user_id == user_id,
+            GameInviteRequest.reviewed == False
+        ).order_by(GameInviteRequest.id.desc()).all()

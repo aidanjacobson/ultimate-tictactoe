@@ -1,5 +1,6 @@
 import json
 import os
+import datetime
 from typing import Optional
 from datamodels.tictactoe import UltimateTicTacToe
 from services.TicTacToeService import TicTacToeService
@@ -48,17 +49,18 @@ class GameFileService:
         self.tictactoe_service.take_turn(game, player, corner, position)
         self.save_game(game_id, game)
         
-        # Update database game record if game is finished
-        if game.current_game.finished:
-            game_record = self.db.query(Game).filter(Game.id == game_id).first()
-            if game_record:
+        # Update database game record with timestamp and finished status
+        game_record = self.db.query(Game).filter(Game.id == game_id).first()
+        if game_record:
+            game_record.updated_at = datetime.datetime.utcnow()
+            if game.current_game.finished:
                 game_record.finished = True  # type: ignore
                 # Set winner based on game state
                 if game.current_game.winner == 'X':
                     game_record.winner_id = game_record.x_user_id
                 elif game.current_game.winner == 'O':
                     game_record.winner_id = game_record.o_user_id
-                self.db.commit()
+            self.db.commit()
 
     def save_game(self, game_id: int, game: UltimateTicTacToe) -> None:
         """
