@@ -19,6 +19,8 @@ export interface GameResponse {
     finished: boolean;
     winner_id: number | null;
     state: UltimateTicTacToeGame;
+    x_user?: { id: number; name: string; username: string } | null;
+    o_user?: { id: number; name: string; username: string } | null;
 }
 
 export interface UltimateTicTacToeGame {

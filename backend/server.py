@@ -72,6 +72,9 @@ class GameResponse(BaseModel):
     o_user_id: int
     finished: bool
     winner_id: Optional[int]
+    state: Optional[Dict[str, Any]] = None
+    x_user: Optional[UserResponse] = None
+    o_user: Optional[UserResponse] = None
 
     class Config:
         from_attributes = True

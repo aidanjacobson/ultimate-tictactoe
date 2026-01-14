@@ -29,6 +29,23 @@
   @include body-text;
   color: $color-text-secondary;
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-lg;
+}
+
+.playerName {
+  font-size: $font-size-h1;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}
+
+.vs {
+  font-size: $font-size-h2;
+  font-weight: $font-weight-bold;
+  color: $color-info;
+  margin: 0 $spacing-md;
 }
 
 .main {
@@ -40,6 +57,35 @@
     display: grid;
     grid-template-columns: 2fr 1fr;
   }
+}
+
+.turnIndicator {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: $spacing-lg;
+  background-color: $color-bg-tertiary;
+  border-radius: $radius-md;
+
+  h2 {
+    @include heading-h2;
+    margin: 0;
+    color: $color-info;
+    font-weight: $font-weight-bold;
+  }
+}
+
+.errorMain {
+  @include container;
+  @include flex-column(center, center);
+  flex: 1;
+}
+
+.errorContainer {
+  @include card-base;
+  @include flex-column(center, center, $spacing-xl);
+  max-width: 600px;
+  width: 100%;
+  padding: $spacing-2xl;
 }
 
 .boardSection {

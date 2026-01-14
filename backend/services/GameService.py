@@ -89,13 +89,19 @@ class GameService:
         # Serialize game state
         game_data = self.game_file_service._serialize_game(game)
         
+        # Get player information
+        x_user = self.user_service.get_user_by_id(game_record.x_user_id)
+        o_user = self.user_service.get_user_by_id(game_record.o_user_id)
+        
         return {
             "id": game_record.id,
             "x_user_id": game_record.x_user_id,
             "o_user_id": game_record.o_user_id,
             "finished": game_record.finished,
             "winner_id": game_record.winner_id,
-            "state": game_data
+            "state": game_data,
+            "x_user": {"id": x_user.id, "name": x_user.name, "username": x_user.username} if x_user else None,
+            "o_user": {"id": o_user.id, "name": o_user.name, "username": o_user.username} if o_user else None
         }
     
     def get_game_ascii(self, game_id: int) -> str:
