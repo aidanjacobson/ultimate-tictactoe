@@ -64,8 +64,30 @@ class UserInvite(Base):
     used = Column(Boolean, default=False)
     used_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(Integer, nullable=False)  # Unix timestamp
-    expires_at = Column(Integer, nullable=False)  # Unix timestamp
+    expires_at = Column(Integer, nullable=True)  # Unix timestamp - optional
     used_at = Column(Integer, nullable=True)  # Unix timestamp
+
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    title = Column(String, nullable=True)
+    message = Column(Text, nullable=False)
+    read = Column(Boolean, default=False)
+    created_at = Column(Integer, nullable=False)  # Unix timestamp
+
+class GameInviteRequest(Base):
+    __tablename__ = "game_invite_requests"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    from_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    to_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    inviter_has_preferred_symbol = Column(Boolean, default=False)
+    preferred_symbol = Column(String, nullable=True)  # 'X' or 'O'
+    reviewed = Column(Boolean, default=False)
+    accepted = Column(Boolean, nullable=True)  # Null if not reviewed yet
 
 # ===== Init helper =====
 

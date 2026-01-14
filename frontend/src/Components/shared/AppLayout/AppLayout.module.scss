@@ -1,0 +1,19 @@
+@import '../../../styles/variables';
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: $color-bg-primary;
+  color: $color-text-primary;
+}
+
+.main {
+  flex: 1;
+  width: 100%;
+  padding: $spacing-lg;
+
+  @media (max-width: $breakpoint-tablet) {
+    padding: $spacing-md;
+  }
+}

@@ -1,0 +1,250 @@
+// ============================================================================
+// ULTIMATE TICTACTOE - SCSS VARIABLES
+// ============================================================================
+// Central source for all design tokens: colors, spacing, typography, shadows
+// Import in all component SCSS files: @import '../../styles/variables';
+// ============================================================================
+
+// ============================================================================
+// COLOR PALETTE - DARK MODE
+// ============================================================================
+
+// Background Colors
+$color-bg-primary: #0f172a;      // Deepest navy, page background
+$color-bg-secondary: #1e293b;    // Dark slate, cards and surfaces
+$color-bg-tertiary: #334155;     // Medium slate, hover states, borders
+$color-surface: #1a1f2e;         // Almost black, emphasis backgrounds
+
+// Accent Colors
+$color-primary: #3b82f6;         // Bright blue, main CTAs and active states
+$color-primary-dark: #2563eb;    // Darker blue for hover
+$color-primary-darker: #1d4ed8;  // Even darker for active states
+
+$color-secondary: #10b981;       // Emerald green, success and wins
+$color-secondary-dark: #059669;  // Darker emerald for hover
+
+$color-tertiary: #f59e0b;        // Amber, warnings and pending states
+$color-tertiary-dark: #d97706;   // Darker amber for hover
+
+$color-danger: #ef4444;          // Red, errors and losses
+$color-danger-dark: #dc2626;     // Darker red for hover
+
+$color-info: #06b6d4;            // Cyan, information and highlights
+$color-info-dark: #0891b2;       // Darker cyan for hover
+
+// Text Colors
+$color-text-primary: #f1f5f9;    // Near white, main content
+$color-text-secondary: #cbd5e1;  // Light gray, secondary content
+$color-text-tertiary: #94a3b8;   // Medium gray, disabled and hints
+$color-text-inverse: #0f172a;    // Dark navy, text on light backgrounds
+
+// Game Board Colors
+$color-player-x: #3b82f6;        // Blue for player X
+$color-player-o: #f59e0b;        // Amber for player O
+$color-neutral: #334155;         // Empty cells
+$color-winner: #10b981;          // Winner highlight
+
+// ============================================================================
+// TYPOGRAPHY
+// ============================================================================
+
+// Font Family
+$font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+$font-family-mono: 'Monaco', 'Courier New', monospace;
+
+// Font Sizes
+$font-size-h1: 32px;             // Page titles
+$font-size-h2: 24px;             // Section headers
+$font-size-h3: 20px;             // Subsection headers
+$font-size-body-lg: 18px;        // Large body text
+$font-size-body: 16px;           // Main body text
+$font-size-small: 14px;          // Small body text
+$font-size-label: 12px;          // Labels and tags
+$font-size-caption: 11px;        // Helper text and timestamps
+
+// Font Weights
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semi-bold: 600;
+$font-weight-bold: 700;
+
+// Line Heights
+$line-height-headings: 1.2;
+$line-height-body: 1.6;
+$line-height-compact: 1.4;
+
+// ============================================================================
+// SPACING SYSTEM
+// ============================================================================
+// Base unit: 4px - all spacing is a multiple of this
+
+$spacing-xs: 4px;                // Tight spacing, icon padding
+$spacing-sm: 8px;                // Small gaps, inline spacing
+$spacing-md: 12px;               // Standard padding, component spacing
+$spacing-lg: 16px;               // Section padding, main gaps
+$spacing-xl: 24px;               // Large gaps, section separation
+$spacing-2xl: 32px;              // Page-level spacing
+$spacing-3xl: 48px;              // Major sections
+
+// Shorthand combinations
+$spacing-sm-md: $spacing-sm $spacing-md;
+$spacing-md-lg: $spacing-md $spacing-lg;
+$spacing-lg-xl: $spacing-lg $spacing-xl;
+
+// ============================================================================
+// BORDER RADIUS
+// ============================================================================
+
+$radius-sm: 4px;                 // Small elements (badges, chips)
+$radius-md: 8px;                 // Buttons, inputs, small cards
+$radius-lg: 12px;                // Cards, dropdowns
+$radius-xl: 16px;                // Modals, dialogs, large containers
+
+// ============================================================================
+// SHADOWS
+// ============================================================================
+
+$shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.2);
+$shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.3);
+
+// Hover shadow (elevated)
+$shadow-hover: 0 8px 12px rgba(0, 0, 0, 0.4);
+
+// ============================================================================
+// TRANSITIONS & ANIMATIONS
+// ============================================================================
+
+$transition-fast: 150ms ease-out;
+$transition-standard: 300ms ease-out;
+$transition-slow: 500ms ease-out;
+
+// Easing functions
+$ease-in: cubic-bezier(0.4, 0, 1, 1);
+$ease-out: cubic-bezier(0, 0, 0.2, 1);
+$ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+// ============================================================================
+// BREAKPOINTS (Mobile-First)
+// ============================================================================
+
+$breakpoint-mobile: 360px;       // Phone devices (start here)
+$breakpoint-mobile-lg: 640px;    // Larger phones
+$breakpoint-tablet: 768px;       // Tablets
+$breakpoint-laptop: 1024px;      // Small laptops
+$breakpoint-desktop: 1280px;     // Large desktop
+$breakpoint-4k: 1920px;          // 4K monitors
+
+// ============================================================================
+// COMPONENT DEFAULTS
+// ============================================================================
+
+// Button
+$button-padding-sm: $spacing-xs $spacing-md;
+$button-padding-md: $spacing-sm $spacing-lg;
+$button-padding-lg: $spacing-md $spacing-xl;
+$button-border-radius: $radius-md;
+$button-transition: all $transition-fast;
+
+// Input
+$input-padding: $spacing-sm $spacing-md;
+$input-border-radius: $radius-md;
+$input-border: 1px solid $color-bg-tertiary;
+$input-border-focus: 1px solid $color-primary;
+$input-transition: all $transition-fast;
+$input-placeholder-color: $color-text-tertiary;
+
+// Card
+$card-padding: $spacing-lg;
+$card-border-radius: $radius-lg;
+$card-border: 1px solid $color-bg-tertiary;
+$card-box-shadow: $shadow-md;
+$card-background: $color-bg-secondary;
+
+// Modal
+$modal-padding: $spacing-xl;
+$modal-border-radius: $radius-xl;
+$modal-background: $color-bg-secondary;
+$modal-backdrop: rgba(0, 0, 0, 0.7);
+
+// Navigation
+$nav-height: 60px;
+$nav-background: $color-bg-primary;
+$nav-border: 1px solid $color-bg-tertiary;
+
+// ============================================================================
+// Z-INDEX SCALE
+// ============================================================================
+
+$z-base: 0;
+$z-dropdown: 10;
+$z-sticky: 20;
+$z-fixed: 30;
+$z-modal-backdrop: 100;
+$z-modal: 101;
+$z-tooltip: 110;
+$z-notification: 120;
+
+// ============================================================================
+// SEMANTIC COLORS FOR STATES
+// ============================================================================
+
+$color-success: $color-secondary;
+$color-success-light: #d1fae5;     // Lighter for backgrounds
+$color-success-dark: $color-secondary-dark;
+
+$color-warning: $color-tertiary;
+$color-warning-light: #fef3c7;
+$color-warning-dark: $color-tertiary-dark;
+
+$color-error: $color-danger;
+$color-error-light: #fee2e2;
+$color-error-dark: $color-danger-dark;
+
+$color-info-light: #cffafe;
+$color-info-alt: $color-info;
+$color-info-alt-dark: $color-info-dark;
+
+// ============================================================================
+// OPACITY VALUES
+// ============================================================================
+
+$opacity-disabled: 0.5;
+$opacity-hover: 0.8;
+$opacity-active: 0.95;
+$opacity-dim: 0.3;
+
+// ============================================================================
+// GRID SYSTEM
+// ============================================================================
+
+$grid-columns: 12;
+$grid-gutter: $spacing-lg;
+$container-max-width: 1200px;
+$container-padding: $spacing-lg;
+
+// ============================================================================
+// STATUS COLORS
+// ============================================================================
+
+$color-status-active: $color-primary;      // In-progress games
+$color-status-won: $color-secondary;       // Won games
+$color-status-lost: $color-danger;         // Lost games
+$color-status-draw: $color-tertiary;       // Drawn games
+$color-status-pending: $color-info;        // Pending invites
+
+// ============================================================================
+// GAME BOARD SPECIFIC
+// ============================================================================
+
+$game-cell-size: 60px;           // On desktop
+$game-cell-size-tablet: 50px;
+$game-cell-size-mobile: 40px;
+$game-cell-border: 2px solid $color-bg-tertiary;
+$game-board-gap: 4px;
+$game-active-corner-border: 3px solid $color-info;
+
+// ============================================================================
+// END OF VARIABLES
+// ============================================================================

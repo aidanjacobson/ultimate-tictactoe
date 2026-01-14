@@ -1,0 +1,100 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: $color-bg-primary;
+  color: $color-text-primary;
+  padding: $spacing-xl;
+}
+
+.header {
+  margin-bottom: $spacing-3xl;
+  padding-bottom: $spacing-lg;
+  border-bottom: 1px solid $color-bg-tertiary;
+
+  h1 {
+    @include heading-h1;
+  }
+}
+
+.main {
+  @include container;
+  @include flex-column;
+  gap: $spacing-xl;
+
+  @include desktop-and-up {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    grid-template-rows: auto 1fr;
+  }
+}
+
+.filterSection {
+  @include card-base;
+
+  h2 {
+    @include heading-h3;
+    margin-bottom: $spacing-lg;
+    color: $color-primary;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      @include small-text;
+      padding: $spacing-md 0;
+      border-bottom: 1px solid $color-bg-tertiary;
+      color: $color-text-secondary;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+
+  @include desktop-and-up {
+    grid-column: 1 / -1;
+  }
+}
+
+.leaderboardSection {
+  @include card-base;
+
+  h2 {
+    @include heading-h2;
+    margin-bottom: $spacing-lg;
+    color: $color-primary;
+  }
+
+  p {
+    @include body-text;
+    margin-bottom: $spacing-md;
+    color: $color-text-secondary;
+  }
+}
+
+.personalRank {
+  @include card-base;
+  height: fit-content;
+
+  h3 {
+    @include heading-h3;
+    margin-bottom: $spacing-lg;
+    color: $color-secondary;
+  }
+
+  p {
+    @include body-text;
+    margin-bottom: $spacing-md;
+    color: $color-text-secondary;
+  }
+
+  @include mobile-only {
+    margin-top: $spacing-xl;
+  }
+}

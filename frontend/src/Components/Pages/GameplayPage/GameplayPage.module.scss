@@ -1,0 +1,97 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: $color-bg-primary;
+  color: $color-text-primary;
+  padding: $spacing-xl;
+}
+
+.header {
+  margin-bottom: $spacing-3xl;
+  padding-bottom: $spacing-lg;
+  border-bottom: 1px solid $color-bg-tertiary;
+  text-align: center;
+
+  h1 {
+    @include heading-h1;
+    margin-bottom: $spacing-md;
+    background: linear-gradient(135deg, $color-primary, $color-info);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+.subtitle {
+  @include body-text;
+  color: $color-text-secondary;
+  margin: 0;
+}
+
+.main {
+  @include container;
+  @include flex-column;
+  gap: $spacing-xl;
+
+  @include desktop-and-up {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.boardSection {
+  @include card-base;
+  @include flex-column(center, center);
+  padding: $spacing-xl;
+}
+
+.infoSection {
+  @include card-base;
+  @include flex-column(flex-start, stretch, $spacing-lg);
+}
+
+.infoBox {
+  background-color: $color-bg-tertiary;
+  border-radius: $radius-md;
+  padding: $spacing-lg;
+  @include flex-column(flex-start, stretch, $spacing-md);
+
+  p {
+    @include body-text;
+    margin: 0;
+    color: $color-text-secondary;
+
+    strong {
+      color: $color-text-primary;
+      font-weight: $font-weight-semi-bold;
+    }
+  }
+}
+
+.errorBox {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid $color-danger;
+  border-radius: $radius-md;
+  padding: $spacing-lg;
+  color: $color-danger;
+  font-size: $font-size-body;
+  margin-bottom: $spacing-lg;
+}
+
+.button {
+  @include button-base;
+  @include button-primary;
+  width: 100%;
+  margin-top: $spacing-md;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}

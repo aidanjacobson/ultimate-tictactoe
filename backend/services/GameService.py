@@ -2,6 +2,7 @@ from typing import Optional, Dict, Any
 from datamodels.tictactoe import UltimateTicTacToe
 from services.GameFileService import GameFileService
 from services.UserService import UserService
+from services.NotificationService import NotificationService
 from database.schema import SessionLocal, Game
 
 
@@ -11,9 +12,10 @@ class GameService:
     Handles game creation, retrieval, turn execution, and database coordination.
     """
     
-    def __init__(self):
-        self.game_file_service = GameFileService()
-        self.user_service = UserService()
+    def __init__(self, game_file_service: GameFileService, user_service: UserService, notification_service: NotificationService):
+        self.game_file_service = game_file_service
+        self.user_service = user_service
+        self.notification_service = notification_service
         self.db = SessionLocal()
     
     def create_game(self, x_user_id: int, o_user_id: int) -> Dict[str, Any]:
@@ -181,6 +183,21 @@ class GameService:
         
         # Serialize updated game state
         game_data = self.game_file_service._serialize_game(game)
+
+        # notify the player who's turn it is now
+        # reload the game
+        new_loaded_game = self.game_file_service.load_game(game_id)
+        if new_loaded_game.current_game.winner is None and not new_loaded_game.current_game.finished:
+            next_player = new_loaded_game.current_game.current_player
+            if next_player == 'X':
+                next_user_id = game_record.x_user_id
+            else:
+                next_user_id = game_record.o_user_id
+            self.notification_service.send_notification(
+                user_id=next_user_id,
+                title="It's your turn!",
+                message=f"Game ID {game_id}: It's your turn to play as {next_player}."
+            )
         
         return {
             "id": game_record.id,

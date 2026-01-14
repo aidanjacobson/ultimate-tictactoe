@@ -1,0 +1,108 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: $color-bg-primary;
+  color: $color-text-primary;
+  padding: $spacing-xl;
+}
+
+.header {
+  margin-bottom: $spacing-3xl;
+  padding-bottom: $spacing-lg;
+  border-bottom: 1px solid $color-bg-tertiary;
+
+  h1 {
+    @include heading-h1;
+  }
+}
+
+.main {
+  @include container;
+  @include flex-column;
+  gap: $spacing-xl;
+
+  @include desktop-and-up {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+  }
+}
+
+.tabsSection {
+  @include card-base;
+  height: fit-content;
+
+  h2 {
+    @include heading-h3;
+    margin-bottom: $spacing-lg;
+    color: $color-primary;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      @include body-text;
+      padding: $spacing-md;
+      margin-bottom: $spacing-sm;
+      background-color: $color-bg-tertiary;
+      border-radius: $radius-md;
+      color: $color-text-secondary;
+      cursor: pointer;
+      transition: all $transition-fast;
+
+      &:hover {
+        background-color: lighten($color-bg-tertiary, 5%);
+        color: $color-text-primary;
+      }
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  @include mobile-only {
+    order: 2;
+  }
+}
+
+.listSection {
+  @include card-base;
+
+  h2 {
+    @include heading-h2;
+    margin-bottom: $spacing-lg;
+    color: $color-primary;
+  }
+
+  p {
+    @include body-text;
+    margin-bottom: $spacing-md;
+    color: $color-text-secondary;
+  }
+}
+
+.detailSection {
+  @include card-base;
+
+  h2 {
+    @include heading-h2;
+    margin-bottom: $spacing-lg;
+    color: $color-secondary;
+  }
+
+  p {
+    @include body-text;
+    margin-bottom: $spacing-md;
+    color: $color-text-secondary;
+  }
+
+  @include desktop-and-up {
+    grid-column: 1 / -1;
+  }
+}

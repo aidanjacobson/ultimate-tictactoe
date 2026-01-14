@@ -1,0 +1,220 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: $color-bg-primary;
+  color: $color-text-primary;
+  padding: $spacing-lg;
+
+  @include tablet-and-up {
+    padding: $spacing-xl;
+  }
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: $spacing-3xl;
+
+  h1 {
+    @include heading-h1;
+    margin: 0 0 $spacing-md 0;
+  }
+}
+
+.subtitle {
+  @include body-text;
+  color: $color-text-secondary;
+  margin: 0;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xl;
+}
+
+.form {
+  @include card-base;
+  @include flex-column(flex-start, stretch, $spacing-lg);
+  width: 100%;
+}
+
+.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid $color-danger;
+  border-radius: $radius-md;
+  color: $color-danger;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+  font-size: $font-size-body;
+  line-height: $line-height-compact;
+}
+
+.formGroup {
+  @include flex-column(flex-start, stretch, $spacing-sm);
+}
+
+.label {
+  @include label-text;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.hint {
+  color: $color-text-tertiary;
+  font-size: $font-size-small;
+  font-weight: $font-weight-normal;
+}
+
+.input {
+  @include input-base;
+  width: 100%;
+
+  &::placeholder {
+    color: $color-text-tertiary;
+  }
+}
+
+.select {
+  @include input-base;
+  width: 100%;
+  cursor: pointer;
+
+  option {
+    background-color: $color-bg-secondary;
+    color: $color-text-primary;
+  }
+}
+
+.submitButton {
+  @include button-base;
+  @include button-primary;
+  width: 100%;
+  margin-top: $spacing-md;
+  font-size: $font-size-body;
+  font-weight: $font-weight-semi-bold;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// Modal Styles
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: $spacing-lg;
+}
+
+.modalContent {
+  @include card-base;
+  max-width: 500px;
+  width: 100%;
+  @include flex-column(flex-start, stretch, $spacing-lg);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modalTitle {
+  @include heading-h2;
+  margin: 0;
+  color: $color-secondary;
+}
+
+.linkSection {
+  @include flex-column(flex-start, stretch, $spacing-md);
+}
+
+.linkLabel {
+  @include label-text;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.linkContainer {
+  display: flex;
+  flex-direction: row;
+  gap: $spacing-md;
+  width: 100%;
+}
+
+.linkInput {
+  @include input-base;
+  flex: 1;
+  background-color: $color-bg-tertiary;
+  cursor: text;
+
+  &:focus {
+    outline: none;
+    border-color: $color-primary;
+    background-color: $color-bg-secondary;
+  }
+}
+
+.copyButton {
+  @include button-base;
+  background-color: $color-primary;
+  color: $color-text-inverse;
+  border: none;
+  padding: $spacing-sm $spacing-lg;
+  white-space: nowrap;
+  transition: all $transition-fast;
+
+  &:hover {
+    background-color: $color-primary-dark;
+  }
+
+  &:active {
+    background-color: $color-primary-darker;
+    transform: scale(0.98);
+  }
+}
+
+.closeButton {
+  @include button-base;
+  @include button-primary;
+  width: 100%;
+  font-size: $font-size-body;
+  font-weight: $font-weight-semi-bold;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}

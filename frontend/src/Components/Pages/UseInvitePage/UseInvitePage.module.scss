@@ -1,0 +1,119 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: $color-bg-primary;
+  color: $color-text-primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-lg;
+}
+
+.container {
+  width: 100%;
+  max-width: 500px;
+}
+
+.header {
+  margin-bottom: $spacing-3xl;
+  text-align: center;
+
+  h1 {
+    @include heading-h1;
+    margin: 0 0 $spacing-md 0;
+    background: linear-gradient(135deg, $color-primary, $color-info);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+.subtitle {
+  @include body-text;
+  color: $color-text-secondary;
+  margin: 0;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xl;
+}
+
+.form {
+  @include card-base;
+  @include flex-column(flex-start, stretch, $spacing-lg);
+  width: 100%;
+}
+
+.formGroup {
+  @include flex-column(flex-start, stretch, $spacing-sm);
+}
+
+.label {
+  @include label-text;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.input {
+  @include input-base;
+  width: 100%;
+
+  &::placeholder {
+    color: $color-text-tertiary;
+  }
+
+  &:disabled {
+    background-color: $color-bg-tertiary;
+    cursor: not-allowed;
+    color: $color-text-tertiary;
+  }
+}
+
+.inputError {
+  border-color: $color-danger;
+  background-color: rgba(239, 68, 68, 0.05);
+
+  &:focus {
+    border-color: $color-danger;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  }
+}
+
+.errorBox {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid $color-danger;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  color: $color-danger;
+  font-size: $font-size-body;
+  margin-bottom: $spacing-lg;
+}
+
+.errorMessage {
+  font-size: $font-size-small;
+  color: $color-danger;
+  display: block;
+  margin-top: $spacing-xs;
+}
+
+.submitButton {
+  @include button-base;
+  @include button-primary;
+  width: 100%;
+  margin-top: $spacing-md;
+  font-size: $font-size-body;
+  font-weight: $font-weight-semi-bold;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}

@@ -2,15 +2,38 @@ import type { GameCreate, GameResponse, GameTurn } from "../datamodels/tictactoe
 import type { UserCreate, UserResponse, UserUpdate } from "../datamodels/users";
 
 const API_BASE = "/api"
+const TOKEN_KEY = 'auth_token'
 
 function getAuthToken(): string | null {
-    return ""; // Placeholder for actual token retrieval logic
+    return localStorage.getItem(TOKEN_KEY)
+}
+
+function setAuthToken(token: string): void {
+    localStorage.setItem(TOKEN_KEY, token)
+}
+
+function clearAuthToken(): void {
+    localStorage.removeItem(TOKEN_KEY)
+}
+
+export interface LoginRequest {
+    username: string
+    password: string
+}
+
+export interface LoginResponse {
+    token: string
+    user: UserResponse
 }
 
 export class ApiService {
     private static handleError(error: unknown): never {
         if (error instanceof Response) {
-            throw new Error(`API Error: ${error.statusText}`)
+            // Clear token on 401 Unauthorized
+            if (error.status === 401) {
+                clearAuthToken();
+            }
+            throw new Error(`API Error: ${error.status} ${error.statusText}`)
         }
         throw error
     }
@@ -47,9 +70,29 @@ export class ApiService {
         return response.json()
     }
 
+    // Auth
+    static async login(credentials: LoginRequest): Promise<LoginResponse> {
+        const response = await this.request<LoginResponse>('POST', '/login', credentials)
+        setAuthToken(response.token)
+        return response
+    }
+
+    static logout(): void {
+        clearAuthToken()
+    }
+
+    static getToken(): string | null {
+        return getAuthToken()
+    }
+
     // Health check
     static async healthCheck(): Promise<{ status: string }> {
         return this.request('GET', '/health')
+    }
+
+    // Validate token
+    static async validate(): Promise<UserResponse> {
+        return this.request('GET', '/validate')
     }
 
     static async createUser(userCreateRequest: UserCreate): Promise<UserResponse> {
@@ -90,6 +133,24 @@ export class ApiService {
     
     static async takeTurn(gameId: number, turn: GameTurn): Promise<GameResponse> {
         return this.request('POST', `/games/${gameId}/turns`, turn);
+    }
+
+    // Invites
+    static async createUserInvite(inviteCode: string | null, expiryDays: number | null): Promise<any> {
+        return this.request('POST', '/invite', {
+            invite_code: inviteCode,
+            expiry_days: expiryDays,
+        });
+    }
+
+    static async useUserInvite(inviteCode: string, name: string, username: string, email: string, password: string): Promise<any> {
+        return this.request('POST', '/invite/use', {
+            invite_code: inviteCode,
+            name,
+            username,
+            email,
+            password,
+        });
     }
 }
 

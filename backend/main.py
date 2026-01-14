@@ -1,9 +1,36 @@
 from database.schema import init_db
 from server import Server
 from services.UserService import UserService
+from services.UserInviteService import UserInviteService
+from services.TicTacToeService import TicTacToeService
+from services.GameFileService import GameFileService
+from services.GameService import GameService
+from services.NotificationService import NotificationService
+
 import os
 from dotenv import load_dotenv
 
+def setup_services():
+    notification_service = NotificationService()
+    user_service = UserService()
+    user_invite_service = UserInviteService(user_service=user_service, notification_service=notification_service)
+    tictactoe_service = TicTacToeService()
+    game_file_service = GameFileService(tictactoe_service=tictactoe_service)
+    game_service = GameService(
+        game_file_service=game_file_service,
+        user_service=user_service,
+        notification_service=notification_service
+    )
+
+    # Start the server
+    print("Starting server on http://0.0.0.0:8080")
+    server = Server(
+        user_service=user_service,
+        game_service=game_service,
+        user_invite_service=user_invite_service,
+        notification_service=notification_service
+    )
+    server.run()
 
 def main():
     # Load environment variables from .env.dev
@@ -39,10 +66,7 @@ def main():
     else:
         print(f"Found {len(all_users)} existing user(s)")
 
-    # Start the server
-    print("Starting server on http://0.0.0.0:8080")
-    server = Server()
-    server.run()
+    setup_services()
 
 
 if __name__ == "__main__":

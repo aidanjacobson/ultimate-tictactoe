@@ -11,7 +11,7 @@ Provides:
 
 from fastapi import Depends, HTTPException, status, Request
 from typing import Optional, Callable
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import jwt
 from services.UserService import UserService
 import os
@@ -44,7 +44,7 @@ def create_token(user_id: int, expires_in_minutes: int = 1440) -> str:
     """
     payload = {
         "user_id": user_id,
-        "exp": datetime.utcnow() + timedelta(minutes=expires_in_minutes)
+        "exp": datetime.now(UTC) + timedelta(minutes=expires_in_minutes)
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
@@ -166,6 +166,14 @@ def auth_as_inviter(invite_id_param: str = "invite_id"):
     def decorator(func: Callable) -> Callable:
         func._auth_type = "as_inviter"
         func._auth_param = invite_id_param
+        return func
+    return decorator
+
+def auth_as_notification_recipient(notification_id_param: str = "notification_id"):
+    """Route requires user to be the recipient of the specified notification (notification_id path param) or be admin"""
+    def decorator(func: Callable) -> Callable:
+        func._auth_type = "as_notification_recipient"
+        func._auth_param = notification_id_param
         return func
     return decorator
 

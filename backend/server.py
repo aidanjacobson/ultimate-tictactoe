@@ -6,6 +6,7 @@ from typing import List, Optional, Dict, Any
 from services.UserService import UserService
 from services.GameService import GameService
 from services.UserInviteService import UserInviteService
+from services.NotificationService import NotificationService
 from database.schema import SessionLocal, Game, User
 from auth import create_token, auth_none, auth_logged_in, auth_as_id, auth_admin, auth_as_id_in_game, auth_as_inviter, get_current_auth_context, AuthContext, require_logged_in, require_admin, require_as_id, require_as_id_in_game, require_as_inviter
 
@@ -37,7 +38,7 @@ class UserResponse(BaseModel):
 
 class UserInviteCreate(BaseModel):
     invite_code: Optional[str] = None
-    expiry_days: float = 7
+    expiry_days: Optional[float] = 7
 
 class UserInviteResponse(BaseModel):
     id: int
@@ -85,11 +86,12 @@ class LoginResponse(BaseModel):
 
 
 class Server:
-    def __init__(self):
+    def __init__(self, user_service: UserService, game_service: GameService, user_invite_service: UserInviteService, notification_service: NotificationService):
         self.app = FastAPI()
-        self.user_service = UserService()
-        self.game_service = GameService()
-        self.user_invite_service = UserInviteService(self.user_service)
+        self.user_service = user_service
+        self.game_service = game_service
+        self.user_invite_service = user_invite_service
+        self.notification_service = notification_service
         self.db = SessionLocal()
 
         # Add auth middleware - REMOVED, using per-route enforcement instead
@@ -114,6 +116,16 @@ class Server:
         async def health_check(auth_context: AuthContext = Depends(get_current_auth_context)):
             """Health check endpoint"""
             return JSONResponse(content={"status": "ok"})
+
+        @self.app.get("/api/validate", response_model=UserResponse)
+        @auth_logged_in()
+        async def validate(auth_context: AuthContext = Depends(get_current_auth_context)):
+            """Validate token and return user info"""
+            require_logged_in(auth_context)
+            user = self.user_service.get_user_by_id(auth_context.user_id)
+            if not user:
+                raise HTTPException(status_code=401, detail="User not found")
+            return UserResponse.from_orm(user)
         
         # ===== User Routes =====
         
@@ -220,11 +232,11 @@ class Server:
         # ===== User Invite Routes =====
 
         @self.app.post("/api/invite")
-        @auth_admin()
+        @auth_logged_in()
         async def create_user_invite(user_invite_create: UserInviteCreate, auth_context: AuthContext = Depends(get_current_auth_context)):
             """Create a new user invite"""
-            # Enforce admin requirement
-            require_admin(auth_context)
+            # Enforce logged in requirement
+            require_logged_in(auth_context)
             
             try:
                 user_invite = self.user_invite_service.create_user_invite(

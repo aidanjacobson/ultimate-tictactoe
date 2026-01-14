@@ -1,0 +1,137 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.header {
+  background-color: $color-bg-secondary;
+  border-bottom: 1px solid $color-bg-tertiary;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: $shadow-sm;
+}
+
+.container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: $spacing-lg $spacing-lg;
+  gap: $spacing-xl;
+
+  @include reduce-motion;
+}
+
+.brand {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  height: 60px;
+}
+
+.title {
+  font-size: $font-size-h1;
+  font-weight: $font-weight-bold;
+  line-height: 1;
+  margin: 0;
+  background: linear-gradient(135deg, $color-primary, $color-info);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: $spacing-lg;
+  height: 60px;
+}
+
+.navLink {
+  color: $color-text-secondary;
+  text-decoration: none;
+  font-size: $font-size-body;
+  font-weight: $font-weight-medium;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  transition: all $transition-fast;
+  position: relative;
+
+  &:hover {
+    color: $color-text-primary;
+    background-color: rgba($color-primary, 0.1);
+  }
+
+  &.active {
+    color: $color-primary;
+    background-color: rgba($color-primary, 0.15);
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: $spacing-md;
+      right: $spacing-md;
+      height: 2px;
+      background-color: $color-primary;
+      border-radius: 1px;
+    }
+  }
+}
+
+.actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: $spacing-md;
+  flex-shrink: 0;
+}
+
+.inviteButton {
+  @include button-base;
+  background-color: $color-primary;
+  color: $color-text-inverse;
+  border: none;
+  padding: $spacing-sm $spacing-lg;
+  flex-shrink: 0;
+  transition: all $transition-fast;
+
+  &:hover {
+    background-color: $color-primary-dark;
+  }
+
+  &:active {
+    background-color: $color-primary-darker;
+    transform: scale(0.98);
+  }
+}
+
+.logoutButton {
+  @include button-base;
+  background-color: transparent;
+  color: $color-text-secondary;
+  border: 1px solid $color-bg-tertiary;
+  padding: $spacing-sm $spacing-md;
+  flex-shrink: 0;
+  transition: all $transition-fast;
+
+  &:hover {
+    color: $color-danger;
+    border-color: $color-danger;
+    background-color: rgba($color-danger, 0.05);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  @include tablet-and-up {
+    min-width: 100px;
+  }
+}

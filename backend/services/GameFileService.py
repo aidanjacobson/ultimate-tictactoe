@@ -11,8 +11,8 @@ os.makedirs(GAMES_DIR, exist_ok=True)
 
 
 class GameFileService:
-    def __init__(self):
-        self.tictactoe_service = TicTacToeService()
+    def __init__(self, tictactoe_service: TicTacToeService):
+        self.tictactoe_service = tictactoe_service
         self.db = SessionLocal()
 
     def start_new_game(self, game_id: int) -> UltimateTicTacToe:

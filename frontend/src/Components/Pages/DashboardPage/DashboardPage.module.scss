@@ -1,0 +1,70 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: $color-bg-primary;
+  color: $color-text-primary;
+  padding: $spacing-lg;
+
+  @include tablet-and-up {
+    padding: $spacing-xl;
+  }
+
+  @include desktop-and-up {
+    padding: $spacing-2xl $spacing-xl;
+  }
+}
+
+.header {
+  margin-bottom: $spacing-2xl;
+  padding-bottom: $spacing-lg;
+  border-bottom: 1px solid $color-bg-tertiary;
+  text-align: center;
+
+  h1 {
+    @include heading-h1;
+  }
+}
+
+.main {
+  width: 100%;
+  max-width: $container-max-width;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.section {
+  @include card-base;
+  margin-bottom: $spacing-xl;
+
+  h2 {
+    @include heading-h2;
+    margin-bottom: $spacing-lg;
+    color: $color-primary;
+  }
+
+  p {
+    @include body-text;
+    margin-bottom: $spacing-md;
+    color: $color-text-secondary;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      @include body-text;
+      padding: $spacing-md 0;
+      border-bottom: 1px solid $color-bg-tertiary;
+      color: $color-text-secondary;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+}

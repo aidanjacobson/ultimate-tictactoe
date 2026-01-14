@@ -1,0 +1,100 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: $color-bg-primary;
+  color: $color-text-primary;
+  padding: $spacing-xl;
+}
+
+.header {
+  margin-bottom: $spacing-3xl;
+  padding-bottom: $spacing-lg;
+  border-bottom: 1px solid $color-bg-tertiary;
+
+  h1 {
+    @include heading-h1;
+    margin-bottom: $spacing-md;
+  }
+
+  p {
+    @include body-text;
+    color: $color-text-secondary;
+  }
+}
+
+.main {
+  @include container;
+  @include flex-column;
+  gap: $spacing-xl;
+  max-width: 600px;
+}
+
+.inviteCard {
+  @include card-base;
+  border-color: $color-info;
+
+  h2 {
+    @include heading-h2;
+    margin-bottom: $spacing-lg;
+    color: $color-info;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      @include body-text;
+      padding: $spacing-md 0;
+      border-bottom: 1px solid $color-bg-tertiary;
+      color: $color-text-secondary;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+}
+
+.actions {
+  @include card-base;
+
+  h2 {
+    @include heading-h2;
+    margin-bottom: $spacing-lg;
+    color: $color-secondary;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      @include body-text;
+      padding: $spacing-md 0;
+      border-bottom: 1px solid $color-bg-tertiary;
+      color: $color-text-secondary;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+}
+
+.emptyState {
+  @include card-base;
+  background-color: rgba($color-tertiary, 0.05);
+  border-color: $color-tertiary;
+  text-align: center;
+
+  p {
+    @include body-text;
+    color: $color-tertiary;
+  }
+}
