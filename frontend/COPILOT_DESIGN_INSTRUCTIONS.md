@@ -226,7 +226,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
   &--lg {
     padding: $spacing-md $spacing-xl;
-    font-size: $font-size-large;
+    font-size: $font-size-h1;
   }
 
   // States

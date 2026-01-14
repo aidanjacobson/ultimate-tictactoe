@@ -25,6 +25,12 @@
   }
 }
 
+.subtitle {
+  @include body-text;
+  color: $color-text-secondary;
+  margin: 0;
+}
+
 .main {
   @include container;
   @include flex-column;
@@ -38,7 +44,6 @@
   @include card-base;
   @include flex-column(flex-start, stretch, $spacing-lg);
   padding: $spacing-2xl;
-  width: 100%;
 
   h2 {
     @include heading-h2;
@@ -47,31 +52,82 @@
   }
 }
 
-.inviteDetails {
+.selectedUser {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   background-color: $color-bg-tertiary;
   border-radius: $radius-md;
   padding: $spacing-lg;
+  gap: $spacing-lg;
 }
 
-.symbolInfo {
-  @include body-text;
-  margin: 0;
-  color: $color-text-primary;
-  display: flex;
-  align-items: center;
-  gap: $spacing-xs;
+.userInfo {
+  flex: 1;
+
+  p {
+    margin: 0;
+    @include body-text;
+
+    &:first-child {
+      color: $color-text-secondary;
+      font-size: $font-size-small;
+      margin-bottom: $spacing-sm;
+    }
+  }
 }
 
-.symbolValue {
-  color: $color-danger;
+.userName {
   font-weight: $font-weight-bold;
-  display: inline-block;
-  font-size: $font-size-h2;
-  margin-left: $spacing-md;
+  color: $color-primary;
+  font-size: $font-size-body-lg;
+}
+
+.userUsername {
+  color: $color-text-secondary;
+  font-size: $font-size-small;
+}
+
+.selectButton,
+.changeButton,
+.sendButton,
+.resetButton {
+  @include button-base;
+  width: 100%;
+  padding: $spacing-md $spacing-lg;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.selectButton,
+.changeButton {
+  @include button-secondary;
+}
+
+.sendButton {
+  @include button-primary;
+}
+
+.resetButton {
+  @include button-secondary;
 }
 
 .symbolSection {
   @include flex-column(flex-start, stretch, $spacing-lg);
+  background-color: $color-bg-tertiary;
+  border-radius: $radius-md;
+  padding: $spacing-lg;
 }
 
 .checkboxLabel {
@@ -143,10 +199,28 @@
   &:hover:not(.active) {
     background-color: rgba($color-primary, 0.1);
   }
+}
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+.inviteInfo {
+  margin-top: $spacing-lg;
+}
+
+.infoBox {
+  background-color: rgba($color-info, 0.1);
+  border: 1px solid $color-info;
+  border-radius: $radius-md;
+  padding: $spacing-lg;
+  @include flex-column(flex-start, stretch, $spacing-md);
+
+  p {
+    @include body-text;
+    margin: 0;
+    color: $color-text-primary;
+
+    strong {
+      color: $color-info;
+      font-weight: $font-weight-semi-bold;
+    }
   }
 }
 
@@ -155,47 +229,4 @@
   margin-top: $spacing-lg;
   padding-top: $spacing-lg;
   border-top: 1px solid $color-bg-secondary;
-  gap: $spacing-lg;
-}
-
-.acceptButton,
-.declineButton {
-  @include button-base;
-  width: 100%;
-  padding: $spacing-md $spacing-lg;
-
-  &:hover:not(:disabled) {
-    transform: translateY(-2px);
-  }
-
-  &:active:not(:disabled) {
-    transform: translateY(0);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
-
-.acceptButton {
-  @include button-primary;
-}
-
-.declineButton {
-  @include button-secondary;
-}
-
-.errorBox {
-  background-color: rgba($color-danger, 0.1);
-  border: 1px solid $color-danger;
-  border-radius: $radius-md;
-  padding: $spacing-lg;
-}
-
-.errorMessage {
-  @include body-text;
-  color: $color-danger;
-  margin: 0;
-  font-weight: $font-weight-semi-bold;
 }

@@ -69,7 +69,7 @@ const Header: FC = () => {
         <div className={styles.actions}>
           <button 
             className={styles.inviteButton} 
-            onClick={() => navigate('/invites/create')}
+            onClick={() => navigate('/invites/user/create')}
           >
             Invite User
           </button>

@@ -1,7 +1,9 @@
 from database.schema import init_db
+from database.migrations import repair_winner_ids
 from server import Server
 from services.UserService import UserService
 from services.UserInviteService import UserInviteService
+from services.GameInviteService import GameInviteService
 from services.TicTacToeService import TicTacToeService
 from services.GameFileService import GameFileService
 from services.GameService import GameService
@@ -21,6 +23,7 @@ def setup_services():
         user_service=user_service,
         notification_service=notification_service
     )
+    game_invite_service = GameInviteService(game_service=game_service, notification_service=notification_service)
 
     # Start the server
     print("Starting server on http://0.0.0.0:8080")
@@ -28,6 +31,7 @@ def setup_services():
         user_service=user_service,
         game_service=game_service,
         user_invite_service=user_invite_service,
+        game_invite_service=game_invite_service,
         notification_service=notification_service
     )
     server.run()
@@ -40,6 +44,10 @@ def main():
     print("Initializing database...")
     init_db()
     print("Database initialized successfully")
+
+    # Run database migrations
+    print("Running database migrations...")
+    repair_winner_ids()
 
     # Initialize default admin user if no users exist
     print("Checking for users...")

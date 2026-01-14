@@ -16,7 +16,9 @@ const GameplayPage: FC = () => {
   
   const [game, setGame] = useState<GameResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [moveError, setMoveError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [submittingMove, setSubmittingMove] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
 
   useEffect(() => {
@@ -55,6 +57,22 @@ const GameplayPage: FC = () => {
     fetchGame();
   }, [gameId]);
 
+  // Poll for game updates every 2 seconds
+  useEffect(() => {
+    if (!gameId || !game || game.finished) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const updatedGame = await ApiService.getGame(parseInt(gameId));
+        setGame(updatedGame);
+      } catch (err) {
+        // Silently ignore polling errors
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [gameId, game?.finished]);
+
   const getTurnIndicator = (): string => {
     if (!game || !currentUser) return '';
     
@@ -67,6 +85,52 @@ const GameplayPage: FC = () => {
       (!isCurrentUserXPlayer && !currentPlayerIsX);
     
     return isCurrentUserTurn ? 'Your Turn' : "Opponent's Turn";
+  };
+
+  const isCurrentUserTurn = (): boolean => {
+    if (!game || !currentUser) return false;
+    
+    const currentPlayerSymbol = game.state.current_game.turn;
+    const isCurrentUserXPlayer = game.x_user_id === currentUser.id;
+    const currentPlayerIsX = currentPlayerSymbol === 'X';
+    
+    return (isCurrentUserXPlayer && currentPlayerIsX) || (!isCurrentUserXPlayer && !currentPlayerIsX);
+  };
+
+  const getCurrentPlayerSymbol = (): 'X' | 'O' => {
+    if (!game || !currentUser) return 'X';
+    const isCurrentUserXPlayer = game.x_user_id === currentUser.id;
+    return isCurrentUserXPlayer ? 'X' : 'O';
+  };
+
+  const handleCellClick = async (corner: string, position: string) => {
+    if (!gameId || !game || submittingMove) return;
+
+    setSubmittingMove(true);
+    setMoveError(null);
+
+    try {
+      const playerSymbol = getCurrentPlayerSymbol();
+      const updatedGame = await ApiService.takeTurn(parseInt(gameId), {
+        player: playerSymbol,
+        corner,
+        position,
+      });
+
+      // Update game state with successful move
+      setGame(updatedGame);
+    } catch (err: unknown) {
+      let errorMessage = 'Failed to make move. Please try again.';
+      
+      if (err instanceof Error) {
+        // Use the error message directly - it now contains the API detail
+        errorMessage = err.message;
+      }
+      
+      setMoveError(errorMessage);
+    } finally {
+      setSubmittingMove(false);
+    }
   };
 
   if (loading) {
@@ -117,25 +181,60 @@ const GameplayPage: FC = () => {
         <div className={styles.turnIndicator}>
           <h2>{getTurnIndicator()}</h2>
         </div>
+
+        {moveError && (
+          <div className={styles.moveErrorContainer}>
+            <div className={styles.moveErrorBox}>
+              <strong>Move Error:</strong> {moveError}
+            </div>
+          </div>
+        )}
+
         <section className={styles.boardSection}>
-          <UltimateTicTacToeGameBoard gameState={game.state.current_game} />
+          <UltimateTicTacToeGameBoard 
+            gameState={game.state.current_game}
+            activeCorner={game.finished ? null : (game.state.current_game.activeCorner || null)}
+            onCellClick={handleCellClick}
+            isPlayerTurn={isCurrentUserTurn() && !game.finished}
+          />
         </section>
 
         <section className={styles.infoSection}>
           <h2>Game Info</h2>
           <div className={styles.infoBox}>
-            {(() => {
-              const currentPlayer = game.state.current_game.turn === 'X' ? game.x_user : game.o_user;
-              const symbol = game.state.current_game.turn;
-              if (currentPlayer) {
-                return <p><strong>Current Turn:</strong> {symbol} - {currentPlayer.name} (@{currentPlayer.username})</p>;
-              }
-              return <p><strong>Current Turn:</strong> Player {symbol}</p>;
-            })()}
-            <p><strong>Status:</strong> {game.finished ? (game.winner_id ? 'Finished' : 'Draw') : 'In Progress'}</p>
-            {game.state.current_game.activeCorner && (
-              <p><strong>Active Corner:</strong> {game.state.current_game.activeCorner}</p>
+            {!game.finished ? (
+              <>
+                {(() => {
+                  const symbol = game.state.current_game.turn;
+                  const player = game.state.current_game.turn === 'X' ? game.x_user : game.o_user;
+                  
+                  if (player) {
+                    return <p><strong>Current Turn:</strong> {symbol} - {player.name} (@{player.username})</p>;
+                  }
+                  return <p><strong>Current Turn:</strong> Player {symbol}</p>;
+                })()}
+                {game.state.current_game.activeCorner && (
+                  <p><strong>Active Corner:</strong> {game.state.current_game.activeCorner}</p>
+                )}
+              </>
+            ) : (
+              <>
+                {(() => {
+                  if (!game.winner_id) {
+                    return <p><strong>Winner:</strong> None (Tie)</p>;
+                  }
+                  
+                  const winner = game.winner_id === game.x_user_id ? game.x_user : game.o_user;
+                  const winnerSymbol = game.winner_id === game.x_user_id ? 'X' : 'O';
+                  
+                  if (winner) {
+                    return <p><strong>Winner:</strong> {winnerSymbol} - {winner.name} (@{winner.username})</p>;
+                  }
+                  return <p><strong>Winner:</strong> Player {winnerSymbol}</p>;
+                })()}
+              </>
             )}
+            <p><strong>Status:</strong> {game.finished ? (game.winner_id ? 'Finished' : 'Draw') : 'In Progress'}</p>
           </div>
           <button onClick={() => navigate('/')} className={styles.button}>
             Return to Dashboard

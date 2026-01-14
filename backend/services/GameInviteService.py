@@ -15,6 +15,10 @@ class GameInviteService:
         inviter_has_preferred_symbol: bool|None = None,
         preferred_symbol: str|None = None
     ) -> GameInviteRequest:
+        # Validate users are different
+        if from_user_id == to_user_id:
+            raise ValueError("Cannot send a game invite to yourself")
+        
         # if a preferred_symbol is provided, make sure it's X or O
         if inviter_has_preferred_symbol and preferred_symbol not in ['X', 'O']:
             raise ValueError("preferred_symbol must be 'X' or 'O' if inviter_has_preferred_symbol is True")
@@ -29,6 +33,13 @@ class GameInviteService:
         self.db.commit()
         self.db.refresh(invite_request)
         return invite_request
+
+    def get_game_invite(self, invite_id: int) -> GameInviteRequest:
+        """Retrieve a game invite by ID"""
+        invite = self.db.query(GameInviteRequest).filter(GameInviteRequest.id == invite_id).first()
+        if not invite:
+            raise ValueError(f"Invite with ID {invite_id} does not exist")
+        return invite
 
     def respond_to_game_invite(self,
         invite_id: int,
@@ -49,7 +60,7 @@ class GameInviteService:
                 title="Game Invite Declined",
                 message=f"Your game invite to user {invite.to_user_id} was declined."
             )
-            return
+            return None
 
         # the invite is accepted
         invite.reviewed = True
@@ -86,5 +97,6 @@ class GameInviteService:
             message=f"Your game invite to user {invite.to_user_id} was accepted. A new game has been created. You are playing as '{inviter_symbol}'."
         )
 
-        # create the game
+        # create the game and return it
         game_data = self.game_service.create_game(x_user_id=x_user_id, o_user_id=o_user_id)
+        return game_data

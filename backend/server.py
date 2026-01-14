@@ -6,8 +6,9 @@ from typing import List, Optional, Dict, Any
 from services.UserService import UserService
 from services.GameService import GameService
 from services.UserInviteService import UserInviteService
+from services.GameInviteService import GameInviteService
 from services.NotificationService import NotificationService
-from database.schema import SessionLocal, Game, User
+from database.schema import SessionLocal, Game, User, GameInviteRequest
 from auth import create_token, auth_none, auth_logged_in, auth_as_id, auth_admin, auth_as_id_in_game, auth_as_inviter, get_current_auth_context, AuthContext, require_logged_in, require_admin, require_as_id, require_as_id_in_game, require_as_inviter
 
 import os
@@ -87,13 +88,34 @@ class LoginResponse(BaseModel):
     token: str
     user: UserResponse
 
+class GameInviteCreate(BaseModel):
+    to_user_id: int
+    inviter_has_preferred_symbol: Optional[bool] = False
+    preferred_symbol: Optional[str] = None
+
+class GameInviteResponse(BaseModel):
+    id: int
+    from_user_id: int
+    to_user_id: int
+    inviter_has_preferred_symbol: bool
+    preferred_symbol: Optional[str]
+    reviewed: bool
+    accepted: Optional[bool]
+
+    class Config:
+        from_attributes = True
+
+class GameInviteAccept(BaseModel):
+    preferred_symbol: Optional[str] = None
+
 
 class Server:
-    def __init__(self, user_service: UserService, game_service: GameService, user_invite_service: UserInviteService, notification_service: NotificationService):
+    def __init__(self, user_service: UserService, game_service: GameService, user_invite_service: UserInviteService, game_invite_service: GameInviteService, notification_service: NotificationService):
         self.app = FastAPI()
         self.user_service = user_service
         self.game_service = game_service
         self.user_invite_service = user_invite_service
+        self.game_invite_service = game_invite_service
         self.notification_service = notification_service
         self.db = SessionLocal()
 
@@ -369,6 +391,93 @@ class Server:
                 )
             except Exception as e:
                 raise HTTPException(status_code=400, detail=str(e))
+
+        @self.app.post("/api/game-invites", response_model=GameInviteResponse)
+        @auth_logged_in()
+        async def create_game_invite(invite: GameInviteCreate, auth_context: AuthContext = Depends(get_current_auth_context)):
+            """Create a game invite"""
+            require_logged_in(auth_context)
+            
+            try:
+                return self.game_invite_service.create_game_invite(
+                    from_user_id=auth_context.user_id,
+                    to_user_id=invite.to_user_id,
+                    inviter_has_preferred_symbol=invite.inviter_has_preferred_symbol,
+                    preferred_symbol=invite.preferred_symbol
+                )
+            except ValueError as e:
+                raise HTTPException(status_code=400, detail=str(e))
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
+
+        @self.app.get("/api/game-invites/{invite_id}", response_model=GameInviteResponse)
+        @auth_logged_in()
+        async def get_game_invite(invite_id: int, auth_context: AuthContext = Depends(get_current_auth_context)):
+            """Get a game invite by ID"""
+            require_logged_in(auth_context)
+            
+            try:
+                invite = self.game_invite_service.get_game_invite(invite_id)
+                # Verify the current user is either the inviter or invitee
+                if auth_context.user_id != invite.from_user_id and auth_context.user_id != invite.to_user_id:
+                    raise HTTPException(status_code=403, detail="You do not have permission to view this invite")
+                return invite
+            except ValueError as e:
+                raise HTTPException(status_code=404, detail=str(e))
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
+
+        @self.app.post("/api/game-invites/{invite_id}/accept")
+        @auth_logged_in()
+        async def accept_game_invite(invite_id: int, accept_data: GameInviteAccept, auth_context: AuthContext = Depends(get_current_auth_context)):
+            """Accept a game invite"""
+            require_logged_in(auth_context)
+            
+            try:
+                # Get the invite first to check permissions
+                invite = self.game_invite_service.get_game_invite(invite_id)
+                if auth_context.user_id != invite.to_user_id:
+                    raise HTTPException(status_code=403, detail="You do not have permission to accept this invite")
+                
+                game = self.game_invite_service.respond_to_game_invite(
+                    invite_id=invite_id,
+                    accepted=True,
+                    preferred_symbol=accept_data.preferred_symbol
+                )
+                if not game:
+                    raise HTTPException(status_code=500, detail="Failed to create game")
+                return {"game_id": game.id}
+            except ValueError as e:
+                raise HTTPException(status_code=400, detail=str(e))
+            except HTTPException:
+                raise
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
+
+        @self.app.post("/api/game-invites/{invite_id}/decline")
+        @auth_logged_in()
+        async def decline_game_invite(invite_id: int, auth_context: AuthContext = Depends(get_current_auth_context)):
+            """Decline a game invite"""
+            require_logged_in(auth_context)
+            
+            try:
+                # Get the invite first to check permissions
+                invite = self.game_invite_service.get_game_invite(invite_id)
+                if auth_context.user_id != invite.to_user_id:
+                    raise HTTPException(status_code=403, detail="You do not have permission to decline this invite")
+                
+                self.game_invite_service.respond_to_game_invite(
+                    invite_id=invite_id,
+                    accepted=False,
+                    preferred_symbol=None
+                )
+                return {"status": "declined"}
+            except ValueError as e:
+                raise HTTPException(status_code=400, detail=str(e))
+            except HTTPException:
+                raise
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
 
     def run(self, host: str = "0.0.0.0", port: int = 8080):
         """Run the server"""

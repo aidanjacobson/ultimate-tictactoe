@@ -4,6 +4,7 @@ import DashboardPage from './Components/Pages/DashboardPage/DashboardPage';
 import GameplayPage from './Components/Pages/GameplayPage/GameplayPage';
 import LeaderboardPage from './Components/Pages/LeaderboardPage/LeaderboardPage';
 import InviteUserPage from './Components/Pages/InviteUserPage/InviteUserPage';
+import GameInvitePage from './Components/Pages/GameInvitePage/GameInvitePage';
 import RespondToGameInvitePage from './Components/Pages/RespondToGameInvitePage/RespondToGameInvitePage';
 import UseInvitePage from './Components/Pages/UseInvitePage/UseInvitePage';
 import InboxPage from './Components/Pages/InboxPage/InboxPage';
@@ -32,10 +33,13 @@ export const AppRoutes = () => {
       <Route path="/leaderboard" element={<LeaderboardPage />} />
 
       {/* Invitations - User Invites */}
-      <Route path="/invites/create" element={<InviteUserPage />} />
+      <Route path="/invites/user/create" element={<InviteUserPage />} />
+
+      {/* Invitations - Game Invites */}
+      <Route path="/invites/game/create" element={<GameInvitePage />} />
 
       {/* Invitations - Respond to Game Invites */}
-      <Route path="/invites/game/:gameInviteId" element={<RespondToGameInvitePage />} />
+      <Route path="/invites/game/use/:gameInviteId" element={<RespondToGameInvitePage />} />
 
       {/* Invitations - Use/Accept via Link */}
       <Route path="/j/:userInviteCode?" element={<UseInvitePage />} />

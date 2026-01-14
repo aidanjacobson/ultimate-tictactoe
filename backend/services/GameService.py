@@ -18,7 +18,7 @@ class GameService:
         self.notification_service = notification_service
         self.db = SessionLocal()
     
-    def create_game(self, x_user_id: int, o_user_id: int) -> Dict[str, Any]:
+    def create_game(self, x_user_id: int, o_user_id: int) -> Game:
         """
         Create a new game between two users.
         
@@ -27,11 +27,15 @@ class GameService:
             o_user_id: ID of the user playing O
         
         Returns:
-            Dictionary with game data including state
+            Game object
         
         Raises:
-            ValueError: If users don't exist
+            ValueError: If users don't exist or are the same
         """
+        # Validate users are different
+        if x_user_id == o_user_id:
+            raise ValueError("Cannot play a game against yourself")
+        
         # Verify users exist
         user_x = self.user_service.get_user_by_id(x_user_id)
         user_o = self.user_service.get_user_by_id(o_user_id)
@@ -50,19 +54,9 @@ class GameService:
         self.db.refresh(game_record)
         
         # Initialize game via GameFileService
-        game_state = self.game_file_service.start_new_game(game_record.id)
+        self.game_file_service.start_new_game(game_record.id)
         
-        # Serialize game state
-        game_data = self.game_file_service._serialize_game(game_state)
-        
-        return {
-            "id": game_record.id,
-            "x_user_id": game_record.x_user_id,
-            "o_user_id": game_record.o_user_id,
-            "finished": game_record.finished,
-            "winner_id": game_record.winner_id,
-            "state": game_data
-        }
+        return game_record
     
     def get_game(self, game_id: int) -> Dict[str, Any]:
         """
@@ -186,6 +180,9 @@ class GameService:
         
         # Refresh game record from database in case it was updated
         self.db.refresh(game_record)
+        
+        # Re-query to ensure we have the latest data including updated winner_id
+        game_record = self.db.query(Game).filter(Game.id == game_id).first()
         
         # Serialize updated game state
         game_data = self.game_file_service._serialize_game(game)

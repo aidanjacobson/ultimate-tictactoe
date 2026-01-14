@@ -65,11 +65,48 @@ export class ApiService {
 
         const response = await fetch(url, options)
         if (!response.ok) {
-            this.handleError(response)
+            // Try to extract error detail from response body
+            let errorDetail = `${response.status} ${response.statusText}`
+            try {
+                const errorBody = await response.json()
+                if (errorBody.detail) {
+                    errorDetail = errorBody.detail
+                }
+            } catch {
+                // If response is not JSON, use default error
+            }
+            
+            // Clear token on 401 Unauthorized
+            if (response.status === 401) {
+                clearAuthToken()
+            }
+            
+            throw new Error(errorDetail)
         }
         return response.json()
     }
 
+    // Invites - Game Invites
+    static async createGameInvite(toUserId: number, inviterHasPreferredSymbol: boolean, preferredSymbol: string | null): Promise<any> {
+        return this.request('POST', '/game-invites', {
+            to_user_id: toUserId,
+            inviter_has_preferred_symbol: inviterHasPreferredSymbol,
+            preferred_symbol: preferredSymbol,
+        });
+    }
+
+    static async getGameInvite(inviteId: number): Promise<any> {
+        return this.request('GET', `/game-invites/${inviteId}`);
+    }
+    static async acceptGameInvite(inviteId: number, preferredSymbol?: string): Promise<any> {
+        return this.request('POST', `/game-invites/${inviteId}/accept`, {
+            preferred_symbol: preferredSymbol || null,
+        });
+    }
+
+    static async declineGameInvite(inviteId: number): Promise<any> {
+        return this.request('POST', `/game-invites/${inviteId}/decline`);
+    }
     // Auth
     static async login(credentials: LoginRequest): Promise<LoginResponse> {
         const response = await this.request<LoginResponse>('POST', '/login', credentials)
@@ -132,7 +169,7 @@ export class ApiService {
     }
     
     static async takeTurn(gameId: number, turn: GameTurn): Promise<GameResponse> {
-        return this.request('POST', `/games/${gameId}/turns`, turn);
+        return this.request('POST', `/games/${gameId}/turn`, turn);
     }
 
     // Invites

@@ -3,7 +3,7 @@ import styles from './CreateGameInvitePage.module.scss';
 
 /**
  * CreateGameInvitePage - Create shareable/linkable game invitations
- * Route: /invites/create
+ * Route: /invites/user/create
  */
 const CreateGameInvitePage: FC = () => {
   return (

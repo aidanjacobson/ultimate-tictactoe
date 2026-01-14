@@ -246,7 +246,7 @@
 ---
 
 ### 8. Create Game Invite Screen
-**Route**: `/invites/create`  
+**Route**: `/invites/user/create`  
 **Purpose**: Create shareable/linkable game invitations  
 **Auth Required**: Yes  
 **Layout**: Form with link generation

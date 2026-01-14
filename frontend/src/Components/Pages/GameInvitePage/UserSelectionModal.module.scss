@@ -1,0 +1,161 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modalContent {
+  background-color: $color-bg-primary;
+  border-radius: $radius-lg;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-xl;
+  border-bottom: 1px solid $color-bg-tertiary;
+
+  h2 {
+    @include heading-h2;
+    margin: 0;
+    color: $color-primary;
+  }
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: $font-size-body-lg;
+  color: $color-text-secondary;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-md;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: $color-bg-tertiary;
+    color: $color-text-primary;
+  }
+}
+
+.modalBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: $spacing-lg;
+}
+
+.loadingMessage,
+.emptyMessage {
+  @include body-text;
+  color: $color-text-secondary;
+  text-align: center;
+  padding: $spacing-2xl $spacing-lg;
+  margin: 0;
+}
+
+.userList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.userItem {
+  @include card-base;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-lg;
+  background-color: $color-bg-secondary;
+  border: 1px solid $color-bg-tertiary;
+  border-radius: $radius-md;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: $color-bg-tertiary;
+    border-color: $color-primary;
+    transform: translateX(4px);
+  }
+
+  &:active {
+    transform: translateX(2px);
+  }
+}
+
+.userContent {
+  text-align: left;
+  flex: 1;
+
+  p {
+    margin: 0;
+    @include body-text;
+
+    &:first-child {
+      font-weight: $font-weight-bold;
+      color: $color-text-primary;
+      font-size: $font-size-body-lg;
+    }
+
+    &:last-child {
+      color: $color-text-secondary;
+      font-size: $font-size-small;
+      margin-top: $spacing-xs;
+    }
+  }
+}
+
+.arrow {
+  color: $color-text-secondary;
+  font-size: $font-size-body-lg;
+  font-weight: $font-weight-bold;
+  margin-left: $spacing-lg;
+  transition: color 0.2s ease;
+}
+
+.userItem:hover .arrow {
+  color: $color-primary;
+}

@@ -74,6 +74,22 @@
   }
 }
 
+.moveErrorContainer {
+  grid-column: 1 / -1;
+  padding: 0;
+}
+
+.moveErrorBox {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid $color-danger;
+  border-radius: $radius-md;
+  padding: $spacing-lg;
+  color: $color-danger;
+  font-size: $font-size-body;
+  font-weight: $font-weight-medium;
+  text-align: center;
+}
+
 .errorMain {
   @include container;
   @include flex-column(center, center);
