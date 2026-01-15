@@ -179,7 +179,9 @@ const GameplayPage: FC = () => {
 
       <main className={styles.main}>
         <div className={styles.turnIndicator}>
-          <h2>{getTurnIndicator()}</h2>
+          <h2 style={{ color: getTurnIndicator() === 'Your Turn' ? 'red' : 'inherit' }}>
+            {getTurnIndicator()}
+          </h2>
         </div>
 
         {moveError && (

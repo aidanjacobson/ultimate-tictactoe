@@ -3,10 +3,21 @@
 
 .page {
   width: 100%;
+  max-width: 100%;
   min-height: 100vh;
   background-color: $color-bg-primary;
   color: $color-text-primary;
   padding: $spacing-xl;
+  box-sizing: border-box;
+  overflow-x: hidden;
+
+  @media (max-width: 768px) {
+    padding: $spacing-lg;
+  }
+
+  @media (max-width: 480px) {
+    padding: $spacing-md;
+  }
 }
 
 .header {
@@ -22,6 +33,14 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+
+    @media (max-width: 768px) {
+      font-size: 1.8rem;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 1.4rem;
+    }
   }
 }
 
@@ -33,12 +52,26 @@
   align-items: center;
   justify-content: center;
   gap: $spacing-lg;
+  flex-wrap: wrap;
+
+  @media (max-width: 480px) {
+    gap: $spacing-sm;
+    flex-direction: column;
+  }
 }
 
 .playerName {
   font-size: $font-size-h1;
   font-weight: $font-weight-bold;
   color: $color-primary;
+
+  @media (max-width: 768px) {
+    font-size: 1.3rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1rem;
+  }
 }
 
 .vs {
@@ -46,16 +79,38 @@
   font-weight: $font-weight-bold;
   color: $color-info;
   margin: 0 $spacing-md;
+
+  @media (max-width: 480px) {
+    margin: 0;
+    font-size: 0.9rem;
+  }
 }
 
 .main {
   @include container;
   @include flex-column;
   gap: $spacing-xl;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+
+  @media (max-width: 768px) {
+    gap: $spacing-lg;
+  }
+
+  @media (max-width: 480px) {
+    gap: $spacing-md;
+  }
 
   @include desktop-and-up {
     display: grid;
     grid-template-columns: 2fr 1fr;
+  }
+
+  @media (max-width: 768px) {
+    display: flex;
+    flex-direction: column;
   }
 }
 
@@ -71,6 +126,10 @@
     margin: 0;
     color: $color-info;
     font-weight: $font-weight-bold;
+
+    @media (max-width: 480px) {
+      font-size: 1.1rem;
+    }
   }
 }
 
@@ -108,11 +167,30 @@
   @include card-base;
   @include flex-column(center, center);
   padding: $spacing-xl;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    padding: $spacing-lg;
+  }
+
+  @media (max-width: 480px) {
+    padding: $spacing-lg $spacing-sm;
+  }
+}
+
+.ultimate-board {
 }
 
 .infoSection {
   @include card-base;
   @include flex-column(flex-start, stretch, $spacing-lg);
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 }
 
 .infoBox {
@@ -121,10 +199,19 @@
   padding: $spacing-lg;
   @include flex-column(flex-start, stretch, $spacing-md);
 
+  @media (max-width: 480px) {
+    padding: $spacing-md;
+  }
+
   p {
     @include body-text;
     margin: 0;
     color: $color-text-secondary;
+    font-size: $font-size-body;
+
+    @media (max-width: 480px) {
+      font-size: 0.9rem;
+    }
 
     strong {
       color: $color-text-primary;

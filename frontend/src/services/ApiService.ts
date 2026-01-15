@@ -2,7 +2,18 @@ import type { GameCreate, GameResponse, GameTurn } from "../datamodels/tictactoe
 import type { UserCreate, UserResponse, UserUpdate } from "../datamodels/users";
 import type { GameInviteResponse } from "../datamodels/gameinvites";
 
-const API_BASE = "/api"
+// Prepend BASE_URL if set, otherwise use /api
+const getApiBase = (): string => {
+    let newBaseURL = (window as any).__BASE_URL__
+    if (newBaseURL && !newBaseURL.endsWith('/')) {
+        newBaseURL += '/';
+    }
+
+  const baseUrl = newBaseURL || '/'
+  return baseUrl ? `${baseUrl}api` : '/api'
+}
+
+
 const TOKEN_KEY = 'auth_token'
 
 function getAuthToken(): string | null {
@@ -44,7 +55,7 @@ export class ApiService {
         endpoint: string,
         body?: unknown
     ): Promise<T> {
-        const url = `${API_BASE}${endpoint}`
+        const url = `${getApiBase()}${endpoint}`
         const options: RequestInit = {
             method,
             headers: {

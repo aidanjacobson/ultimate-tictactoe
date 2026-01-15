@@ -1,8 +1,10 @@
 from fastapi import FastAPI, HTTPException, Depends
-from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi.responses import JSONResponse, PlainTextResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
 from services.UserService import UserService
 from services.GameService import GameService
 from services.UserInviteService import UserInviteService
@@ -113,7 +115,9 @@ class GameInviteAccept(BaseModel):
 
 class Server:
     def __init__(self, user_service: UserService, game_service: GameService, user_invite_service: UserInviteService, game_invite_service: GameInviteService, notification_service: NotificationService):
-        self.app = FastAPI()
+        base_url = os.getenv("BASE_URL", "/")
+
+        self.app = FastAPI(root_path=base_url)
         self.user_service = user_service
         self.game_service = game_service
         self.user_invite_service = user_invite_service
@@ -126,11 +130,28 @@ class Server:
 
         self._setup_routes()
         self._ensure_www()
+        self._setup_spa_middleware()
         self._setup_static()
 
     
     def _ensure_www(self):
         os.makedirs("www", exist_ok=True)
+
+    def _setup_spa_middleware(self):
+        """Setup SPA fallback middleware for client-side routing"""
+        class SPAMiddleware(BaseHTTPMiddleware):
+            async def dispatch(self, request: Request, call_next):
+                path = request.url.path
+                # Always pass through /api routes
+                if "/api" in path:
+                    return await call_next(request)
+                # Don't intercept files with extensions
+                if "." in path.split("/")[-1]:
+                    return await call_next(request)
+                # Serve index.html for all other routes (client-side routing)
+                return FileResponse(path="www/index.html")
+        
+        self.app.add_middleware(SPAMiddleware)
 
     def _setup_static(self):
         self.app.mount("/", StaticFiles(directory="www", html=True), name="static")
@@ -143,6 +164,14 @@ class Server:
         async def health_check(auth_context: AuthContext = Depends(get_current_auth_context)):
             """Health check endpoint"""
             return JSONResponse(content={"status": "ok"})
+
+        @self.app.get("/api/config.js", response_class=PlainTextResponse)
+        @self.app.get("{path:path}/api/config.js", response_class=PlainTextResponse)
+        @auth_none()
+        async def get_config(auth_context: AuthContext = Depends(get_current_auth_context)):
+            """Get frontend configuration as JavaScript"""
+            base_url = os.getenv("BASE_URL", "/")
+            return f"window.__BASE_URL__ = '{base_url}';"
 
         @self.app.get("/api/validate", response_model=UserResponse)
         @auth_logged_in()

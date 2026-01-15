@@ -75,7 +75,9 @@ const InviteUserPage: FC = () => {
   };
 
   const handleCopyLink = () => {
-    const link = `${window.location.origin}/j/${successCode}`;
+    const baseUrl = (window as any).__BASE_URL__ || '';
+    const basePath = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    const link = `${window.location.origin}${basePath}/j/${successCode}`;
     navigator.clipboard.writeText(link);
   };
 
@@ -157,7 +159,11 @@ const InviteUserPage: FC = () => {
                 <input
                   type="text"
                   className={styles.linkInput}
-                  value={`${window.location.origin}/j/${successCode}`}
+                  value={(() => {
+                    const baseUrl = (window as any).__BASE_URL__ || '';
+                    const basePath = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+                    return `${window.location.origin}${basePath}/j/${successCode}`;
+                  })()}
                   readOnly
                 />
                 <button

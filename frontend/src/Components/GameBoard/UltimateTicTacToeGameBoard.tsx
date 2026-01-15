@@ -39,9 +39,10 @@ export default function UltimateTicTacToeGameBoard({ gameState, activeCorner, on
     const displayText = winner === '' ? 'TIE' : winner || ''
     const isActive = activeCorner === subgameKey
     const canPlayInThisCorner = isPlayerTurn && (activeCorner === subgameKey || activeCorner === '')
+    const isActivePlayerTurn = isActive && isPlayerTurn
 
     return (
-      <div key={subgameKey} className={`subgame ${isFinished ? 'finished' : ''} ${isActive ? 'active' : ''}`}>
+      <div key={subgameKey} className={`subgame ${isFinished ? 'finished' : ''} ${isActive ? 'active' : ''} ${isActivePlayerTurn ? 'active-player-turn' : ''}`}>
         {POSITIONS.map((cellKey) => (
           <div 
             key={cellKey} 

@@ -65,6 +65,10 @@ class TicTacToeService:
         game.history.append(history_entry)
         # make the move
         setattr(subgame, position, player)
+        
+        # Update the subgame to check for wins/draws
+        subgame.updateSelf()
+        
         # the next active corner is determined by the position played, unless that subgame is finished
         next_active_corner = position
         next_subgame: SubTicTacToeGame = getattr(game.current_game, next_active_corner)
@@ -75,5 +79,5 @@ class TicTacToeService:
         # next player's turn
         game.current_game.turn = 'O' if player == 'X' else 'X'
 
-        # update game state
+        # update overall game state (checks for ultimate wins/draws)
         game.current_game.updateSelf()
