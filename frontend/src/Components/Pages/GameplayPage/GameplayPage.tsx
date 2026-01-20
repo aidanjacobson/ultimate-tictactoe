@@ -110,9 +110,7 @@ const GameplayPage: FC = () => {
     setMoveError(null);
 
     try {
-      const playerSymbol = getCurrentPlayerSymbol();
       const updatedGame = await ApiService.takeTurn(parseInt(gameId), {
-        player: playerSymbol,
         corner: corner as Position,
         position: position as Position,
       });

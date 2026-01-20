@@ -7,7 +7,6 @@ export interface GameCreate {
 }
 
 export interface GameTurn {
-    player: Player;
     corner: Position;
     position: Position;
 }

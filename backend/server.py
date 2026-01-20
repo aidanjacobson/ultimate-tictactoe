@@ -469,7 +469,7 @@ class Server:
             # Enforce as_id_in_game requirement
             require_as_id_in_game(auth_context, game_id)
             
-            player = 'X' if auth_context.user_id == self.game_service.get_game(game_id).x_user_id else 'O'
+            player = 'X' if auth_context.user_id == self.game_service.get_game(game_id)["x_user_id"] else 'O'
 
             try:
                 return self.game_service.take_turn(
