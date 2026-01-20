@@ -120,6 +120,7 @@
   padding: $spacing-lg;
   background-color: $color-bg-tertiary;
   border-radius: $radius-md;
+  width: 100%;
 
   h2 {
     @include heading-h2;
