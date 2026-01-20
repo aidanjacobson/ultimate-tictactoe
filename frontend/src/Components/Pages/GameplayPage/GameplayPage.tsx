@@ -75,11 +75,15 @@ const GameplayPage: FC = () => {
 
   const getTurnIndicator = (): string => {
     if (!game || !currentUser) return '';
+
+    if (game.state.current_game.finished) {
+      return 'Game Over';
+    }
+    
     
     const currentPlayerSymbol = game.state.current_game.turn;
     const isCurrentUserXPlayer = game.x_user_id === currentUser.id;
     const currentPlayerIsX = currentPlayerSymbol === 'X';
-    
     const isCurrentUserTurn = 
       (isCurrentUserXPlayer && currentPlayerIsX) ||
       (!isCurrentUserXPlayer && !currentPlayerIsX);
@@ -177,7 +181,7 @@ const GameplayPage: FC = () => {
 
       <main className={styles.main}>
         <div className={styles.turnIndicator}>
-          <h2 style={{ color: getTurnIndicator() === 'Your Turn' ? 'red' : 'inherit' }}>
+          <h2 style={{ color: getTurnIndicator() !== 'Opponent\'s Turn' ? 'red' : 'inherit' }}>
             {getTurnIndicator()}
           </h2>
         </div>
