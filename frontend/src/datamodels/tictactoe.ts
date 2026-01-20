@@ -20,6 +20,7 @@ export interface GameResponse {
     state: UltimateTicTacToeGame;
     x_user?: { id: number; name: string; username: string } | null;
     o_user?: { id: number; name: string; username: string } | null;
+    last_move?: { corner: Position; position: Position } | null;
 }
 
 export interface UltimateTicTacToeGame {

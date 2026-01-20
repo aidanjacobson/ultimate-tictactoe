@@ -77,6 +77,7 @@ class GameResponse(BaseModel):
     state: Optional[Dict[str, Any]] = None
     x_user: Optional[UserResponse] = None
     o_user: Optional[UserResponse] = None
+    last_move: Optional[Dict[str, str]] = None
 
     class Config:
         from_attributes = True

@@ -196,6 +196,7 @@ const GameplayPage: FC = () => {
             activeCorner={game.finished ? null : (game.state.current_game.activeCorner || null)}
             onCellClick={handleCellClick}
             isPlayerTurn={isCurrentUserTurn() && !game.finished}
+            lastMove={game.last_move}
           />
         </section>
 

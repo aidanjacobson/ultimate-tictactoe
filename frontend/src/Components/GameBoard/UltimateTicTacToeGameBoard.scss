@@ -69,6 +69,11 @@
           transform: scale(0.95);
         }
       }
+
+      &.last-move {
+        background-color: #fef08a;
+        border: 2px solid #fbbf24;
+      }
     }
 
     .overlay {

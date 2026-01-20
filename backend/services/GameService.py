@@ -59,6 +59,55 @@ class GameService:
         
         return game_record
     
+    def get_last_move(self, game: Any) -> Optional[Dict[str, str]]:
+        """
+        Calculate the last corner/position pair from game history.
+        Returns None if no moves have been made yet.
+        
+        Args:
+            game: The UltimateTicTacToe game object
+        
+        Returns:
+            Dictionary with 'corner' and 'position' keys, or None if no history
+        """
+        if not game.history or len(game.history) == 0:
+            return None
+        
+        # The last move is the difference between current_game and the last history state
+        # We need to find which subgame and position changed
+        last_state = game.history[-1]
+        current_state = game.current_game
+        
+        # Check each subgame position to find the difference
+        positions = [
+            'topleft', 'topmiddle', 'topright',
+            'middleleft', 'center', 'middleright',
+            'bottomleft', 'bottommiddle', 'bottomright'
+        ]
+        
+        for corner in positions:
+            last_subgame = getattr(last_state, corner)
+            current_subgame = getattr(current_state, corner)
+            
+            # Check each cell in the subgame
+            cell_positions = [
+                'topleft', 'topmiddle', 'topright',
+                'middleleft', 'center', 'middleright',
+                'bottomleft', 'bottommiddle', 'bottomright'
+            ]
+            
+            for cell_pos in cell_positions:
+                last_cell = getattr(last_subgame, cell_pos, '')
+                current_cell = getattr(current_subgame, cell_pos, '')
+                
+                if last_cell != current_cell:
+                    return {
+                        "corner": corner,
+                        "position": cell_pos
+                    }
+        
+        return None
+
     def get_game(self, game_id: int) -> Dict[str, Any]:
         """
         Get a game by ID with full state.
@@ -88,6 +137,9 @@ class GameService:
         x_user = self.user_service.get_user_by_id(game_record.x_user_id)
         o_user = self.user_service.get_user_by_id(game_record.o_user_id)
         
+        # Calculate last move
+        last_move = self.get_last_move(game)
+        
         return {
             "id": game_record.id,
             "x_user_id": game_record.x_user_id,
@@ -96,7 +148,8 @@ class GameService:
             "winner_id": game_record.winner_id,
             "state": game_data,
             "x_user": {"id": x_user.id, "name": x_user.name, "username": x_user.username} if x_user else None,
-            "o_user": {"id": o_user.id, "name": o_user.name, "username": o_user.username} if o_user else None
+            "o_user": {"id": o_user.id, "name": o_user.name, "username": o_user.username} if o_user else None,
+            "last_move": last_move
         }
     
     def get_game_ascii(self, game_id: int) -> str:
