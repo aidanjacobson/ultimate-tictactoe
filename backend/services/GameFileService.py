@@ -94,6 +94,22 @@ class GameFileService:
         
         return self._deserialize_game(game_data)
 
+    def delete_game(self, game_id: int) -> None:
+        """
+        Delete a game's JSON file.
+        
+        Args:
+            game_id: The unique ID for the game
+        
+        Raises:
+            ValueError: If the game file doesn't exist
+        """
+        file_path = os.path.join(GAMES_DIR, f"{game_id}.json")
+        if not os.path.exists(file_path):
+            raise ValueError(f"Game file for game {game_id} not found")
+        
+        os.remove(file_path)
+
     def _serialize_game(self, game: UltimateTicTacToe) -> dict:
         """Convert a game object to a JSON-serializable dictionary."""
         def serialize_subgame(subgame):
