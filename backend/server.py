@@ -65,7 +65,6 @@ class GameCreate(BaseModel):
     o_user_id: int
 
 class GameTurn(BaseModel):
-    player: str
     corner: str
     position: str
 
@@ -470,15 +469,19 @@ class Server:
             # Enforce as_id_in_game requirement
             require_as_id_in_game(auth_context, game_id)
             
+            player = 'X' if auth_context.user_id == self.game_service.get_game(game_id).x_user_id else 'O'
+
             try:
                 return self.game_service.take_turn(
                     game_id=game_id,
-                    player=turn.player,
+                    player=player,
                     corner=turn.corner,
                     position=turn.position
                 )
             except Exception as e:
                 raise HTTPException(status_code=400, detail=str(e))
+
+                
 
         @self.app.post("/api/game-invites", response_model=GameInviteResponse)
         @auth_logged_in()
