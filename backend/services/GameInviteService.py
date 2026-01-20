@@ -111,3 +111,11 @@ class GameInviteService:
             GameInviteRequest.to_user_id == user_id,
             GameInviteRequest.reviewed == False
         ).order_by(GameInviteRequest.id.desc()).all()
+
+    def get_all_invites(self) -> list:
+        """Get all game invites"""
+        return self.db.query(GameInviteRequest).all()
+
+    def get_all_unused_invites(self) -> list:
+        """Get all unreviewed game invites"""
+        return self.db.query(GameInviteRequest).filter(GameInviteRequest.reviewed == False).all()

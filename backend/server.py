@@ -480,6 +480,19 @@ class Server:
             except Exception as e:
                 raise HTTPException(status_code=400, detail=str(e))
 
+        @self.app.delete("/api/games/{game_id}")
+        @auth_admin()
+        async def delete_game(game_id: int, auth_context: AuthContext = Depends(get_current_auth_context)):
+            """Delete a game (admin only)"""
+            # Enforce admin requirement
+            require_admin(auth_context)
+            
+            try:
+                self.game_service.delete_game(game_id)
+                return {"message": f"Game {game_id} deleted successfully"}
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=str(e))
+
         @self.app.post("/api/game-invites", response_model=GameInviteResponse)
         @auth_logged_in()
         async def create_game_invite(invite: GameInviteCreate, auth_context: AuthContext = Depends(get_current_auth_context)):
@@ -495,6 +508,30 @@ class Server:
                 )
             except ValueError as e:
                 raise HTTPException(status_code=400, detail=str(e))
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
+
+        @self.app.get("/api/game-invites/", response_model=List[GameInviteResponse])
+        @auth_admin()
+        async def list_all_game_invites(auth_context: AuthContext = Depends(get_current_auth_context)):
+            """List game invites"""
+            require_admin(auth_context)
+            
+            try:
+                invites = self.game_invite_service.get_all_invites()
+                return invites
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
+
+        @self.app.get("/api/game-invites/unused", response_model=List[GameInviteResponse])
+        @auth_admin()
+        async def list_all_unused_game_invites(auth_context: AuthContext = Depends(get_current_auth_context)):
+            """List all unreviewed game invites"""
+            require_admin(auth_context)
+            
+            try:
+                invites = self.game_invite_service.get_all_unused_invites()
+                return invites
             except Exception as e:
                 raise HTTPException(status_code=500, detail=str(e))
 

@@ -132,6 +132,27 @@ class GameService:
         """
         return self.db.query(Game).all()
 
+    def delete_game(self, game_id: int) -> None:
+        """
+        Delete a game by ID (removes from database and file storage).
+        
+        Args:
+            game_id: The game ID
+        
+        Raises:
+            ValueError: If game not found
+        """
+        game_record = self.db.query(Game).filter(Game.id == game_id).first()
+        if not game_record:
+            raise ValueError(f"Game with ID {game_id} not found")
+        
+        # Delete the JSON file
+        self.game_file_service.delete_game(game_id)
+        
+        # Delete from database
+        self.db.delete(game_record)
+        self.db.commit()
+
     def list_games_by_user(self, user_id: int) -> list:
         """
         List all games for a specific user.
