@@ -47,7 +47,7 @@ class UserInviteResponse(BaseModel):
     id: int
     invite_code: str
     created_at: int
-    expires_at: int
+    expires_at: Optional[int]
     used: bool
 
     class Config:
