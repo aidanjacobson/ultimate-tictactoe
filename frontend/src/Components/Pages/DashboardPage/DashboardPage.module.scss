@@ -51,6 +51,10 @@
   grid-template-columns: 1fr;
   gap: $spacing-md;
 
+  > * {
+    min-width: 0;
+  }
+
   @include tablet-and-up {
     grid-template-columns: repeat(2, 1fr);
   }
