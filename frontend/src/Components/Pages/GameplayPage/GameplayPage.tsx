@@ -107,6 +107,22 @@ const GameplayPage: FC = () => {
     return isCurrentUserXPlayer ? 'X' : 'O';
   };
 
+  const formatCornerName = (corner: Position | ''): string => {
+    const cornerNames: Record<Position, string> = {
+      topleft: 'Top Left',
+      topmiddle: 'Top Middle',
+      topright: 'Top Right',
+      middleleft: 'Middle Left',
+      center: 'Center',
+      middleright: 'Middle Right',
+      bottomleft: 'Bottom Left',
+      bottommiddle: 'Bottom Middle',
+      bottomright: 'Bottom Right',
+    };
+
+    return corner === '' ? 'None (go anywhere)' : cornerNames[corner];
+  };
+
   const handleCellClick = async (corner: string, position: string) => {
     if (!gameId || !game || submittingMove) return;
 
@@ -218,9 +234,7 @@ const GameplayPage: FC = () => {
                   }
                   return <p><strong>Current Turn:</strong> Player {symbol}</p>;
                 })()}
-                {game.state.current_game.activeCorner && (
-                  <p><strong>Active Corner:</strong> {game.state.current_game.activeCorner}</p>
-                )}
+                <p><strong>Active Corner:</strong> {formatCornerName(game.state.current_game.activeCorner)}</p>
               </>
             ) : (
               <>
