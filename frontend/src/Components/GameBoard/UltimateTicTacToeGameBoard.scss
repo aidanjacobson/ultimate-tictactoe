@@ -42,6 +42,10 @@
       }
     }
 
+    &.finished .cell.winning-cell {
+      color: #ef4444;
+    }
+
     .cell {
       width: 60px;
       height: 60px;
@@ -73,6 +77,10 @@
       &.last-move {
         background-color: #fef08a;
         border: 2px solid #fbbf24;
+      }
+
+      &.winning-cell {
+        color: #ef4444;
       }
     }
 

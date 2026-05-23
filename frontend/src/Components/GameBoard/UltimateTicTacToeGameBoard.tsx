@@ -21,6 +21,17 @@ const POSITIONS: Position[] = [
   'bottomright',
 ]
 
+const WINNING_COMBINATIONS: Position[][] = [
+  ['topleft', 'topmiddle', 'topright'],
+  ['middleleft', 'center', 'middleright'],
+  ['bottomleft', 'bottommiddle', 'bottomright'],
+  ['topleft', 'middleleft', 'bottomleft'],
+  ['topmiddle', 'center', 'bottommiddle'],
+  ['topright', 'middleright', 'bottomright'],
+  ['topleft', 'center', 'bottomright'],
+  ['topright', 'center', 'bottomleft'],
+]
+
 export default function UltimateTicTacToeGameBoard({ gameState, activeCorner, onCellClick, isPlayerTurn, lastMove }: UltimateTicTacToeGameBoardProps) {
   const getCell = (subgameKey: Position, cellKey: Position) => {
     const subgame = gameState[subgameKey]
@@ -38,6 +49,21 @@ export default function UltimateTicTacToeGameBoard({ gameState, activeCorner, on
     }
   }
 
+  const getWinningPositions = (subgameKey: Position): Set<Position> => {
+    const subgame = gameState[subgameKey]
+    if (!subgame.finished || !subgame.winner) return new Set<Position>()
+
+    const winningPositions = new Set<Position>()
+    WINNING_COMBINATIONS.forEach((combo) => {
+      const values = combo.map((position) => subgame[position])
+      if (values[0] && values.every((value) => value === values[0])) {
+        combo.forEach((position) => winningPositions.add(position))
+      }
+    })
+
+    return winningPositions
+  }
+
   const renderSubgame = (subgameKey: Position) => {
     const subgame = gameState[subgameKey]
     const isFinished = subgame.finished
@@ -46,6 +72,7 @@ export default function UltimateTicTacToeGameBoard({ gameState, activeCorner, on
     const isActive = activeCorner === subgameKey
     const canPlayInThisCorner = isPlayerTurn && (activeCorner === subgameKey || activeCorner === '')
     const isActivePlayerTurn = isActive && isPlayerTurn
+    const winningPositions = getWinningPositions(subgameKey)
 
     return (
       <div key={subgameKey} className={`subgame ${isFinished ? 'finished' : ''} ${isActive ? 'active' : ''} ${isActivePlayerTurn ? 'active-player-turn' : ''}`}>
@@ -54,7 +81,7 @@ export default function UltimateTicTacToeGameBoard({ gameState, activeCorner, on
           return (
             <div 
               key={cellKey} 
-              className={`cell ${canPlayInThisCorner && getCell(subgameKey, cellKey) === '' ? 'clickable' : ''} ${isLast ? 'last-move' : ''}`}
+              className={`cell ${canPlayInThisCorner && getCell(subgameKey, cellKey) === '' ? 'clickable' : ''} ${isLast ? 'last-move' : ''} ${winningPositions.has(cellKey) ? 'winning-cell' : ''}`}
               onClick={() => handleCellClick(subgameKey, cellKey)}
             >
               {getCell(subgameKey, cellKey)}
