@@ -110,6 +110,18 @@ class GameRecordResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class ActiveGameRecord(BaseModel):
+    """Represents an in-progress game in user stats"""
+    id: int
+    x_user_id: int
+    o_user_id: int
+    created_at: datetime.datetime
+    x_user: Optional[UserResponse] = None
+    o_user: Optional[UserResponse] = None
+
+    class Config:
+        from_attributes = True
+
 class UserStatsResponse(BaseModel):
     """Complete user profile with statistics"""
     id: int
@@ -125,6 +137,7 @@ class UserStatsResponse(BaseModel):
     loss_ratio: float  # losses / total_games
     tie_ratio: float  # ties / total_games
     recent_games: List[GameRecordResponse]
+    active_games: List[ActiveGameRecord] = []
 
     class Config:
         from_attributes = True
@@ -195,9 +208,14 @@ class Server:
                 # Don't intercept files with extensions
                 if "." in path.split("/")[-1]:
                     return await call_next(request)
-                # Serve index.html for all other routes (client-side routing)
-                return FileResponse(path="www/index.html")
-        
+                # Read index.html into memory and return as a plain Response.
+                # FileResponse inside BaseHTTPMiddleware triggers a Starlette bug
+                # where the streaming body length diverges from Content-Length,
+                # causing ERR_CONTENT_LENGTH_MISMATCH on the first browser request.
+                with open("www/index.html", "rb") as f:
+                    content = f.read()
+                return Response(content=content, media_type="text/html")
+
         self.app.add_middleware(SPAMiddleware)
 
     def _setup_static(self):
@@ -393,6 +411,22 @@ class Server:
             loss_ratio = losses / total_games if total_games > 0 else 0.0
             tie_ratio = ties / total_games if total_games > 0 else 0.0
             
+            # Collect active (in-progress) games
+            active_games_list = []
+            for game in all_games:
+                if game.finished:
+                    continue
+                x_user = self.user_service.get_user_by_id(game.x_user_id)
+                o_user = self.user_service.get_user_by_id(game.o_user_id)
+                active_games_list.append(ActiveGameRecord(
+                    id=game.id,
+                    x_user_id=game.x_user_id,
+                    o_user_id=game.o_user_id,
+                    created_at=game.created_at,
+                    x_user=UserResponse.from_orm(x_user) if x_user else None,
+                    o_user=UserResponse.from_orm(o_user) if o_user else None,
+                ))
+
             return UserStatsResponse(
                 id=user.id,
                 name=user.name,
@@ -406,7 +440,8 @@ class Server:
                 win_ratio=round(win_ratio, 3),
                 loss_ratio=round(loss_ratio, 3),
                 tie_ratio=round(tie_ratio, 3),
-                recent_games=recent_games_list
+                recent_games=recent_games_list,
+                active_games=active_games_list,
             )
 
         # ===== Admin User Management Routes =====
@@ -555,6 +590,17 @@ class Server:
                 return self.game_service.get_game(game_id)
             except Exception as e:
                 raise HTTPException(status_code=400, detail=str(e))
+
+        @self.app.get("/api/games/{game_id}/spectate", response_model=GameResponse)
+        @auth_logged_in()
+        async def spectate_game(game_id: int, auth_context: AuthContext = Depends(get_current_auth_context)):
+            """Get a game by ID for spectating — accessible to any logged-in user"""
+            require_logged_in(auth_context)
+
+            try:
+                return self.game_service.get_game(game_id)
+            except Exception as e:
+                raise HTTPException(status_code=404, detail=str(e))
 
         @self.app.get("/api/games/{game_id}/ascii", response_model=str)
         @auth_as_id_in_game(game_id_param="game_id")

@@ -29,6 +29,15 @@ export interface GameRecordResponse {
     outcome: 'win' | 'loss' | 'tie';
 }
 
+export interface ActiveGameRecord {
+    id: number;
+    x_user_id: number;
+    o_user_id: number;
+    created_at: string | null;
+    x_user: UserResponse | null;
+    o_user: UserResponse | null;
+}
+
 export interface UserStatsResponse {
     id: number;
     name: string;
@@ -43,4 +52,5 @@ export interface UserStatsResponse {
     loss_ratio: number;
     tie_ratio: number;
     recent_games: GameRecordResponse[];
+    active_games: ActiveGameRecord[];
 }

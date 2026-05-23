@@ -219,6 +219,10 @@
   &.tie {
     border-color: #ffcc00;
   }
+
+  &.active {
+    border-color: $color-info;
+  }
 }
 
 .resultBadge {
@@ -243,6 +247,11 @@
     background-color: rgba(255, 204, 0, 0.2);
     color: #ffcc00;
   }
+
+  .active & {
+    background-color: rgba($color-info, 0.15);
+    color: $color-info;
+  }
 }
 
 .tileOpponent {
@@ -256,6 +265,12 @@
   color: $color-text-secondary;
   font-size: 0.9rem;
   white-space: nowrap;
+}
+
+.spectateHint {
+  color: $color-info;
+  font-size: 0.8rem;
+  opacity: 0.7;
 }
 
 .loadingMessage,

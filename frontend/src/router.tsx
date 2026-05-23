@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import LoginPage from './Components/Pages/LoginPage/LoginPage';
 import DashboardPage from './Components/Pages/DashboardPage/DashboardPage';
 import GameplayPage from './Components/Pages/GameplayPage/GameplayPage';
+import SpectateGamePage from './Components/Pages/SpectateGamePage/SpectateGamePage';
 import LeaderboardPage from './Components/Pages/LeaderboardPage/LeaderboardPage';
 import InviteUserPage from './Components/Pages/InviteUserPage/InviteUserPage';
 import GameInvitePage from './Components/Pages/GameInvitePage/GameInvitePage';
@@ -30,6 +31,9 @@ export const AppRoutes = () => {
 
       {/* Gameplay */}
       <Route path="/game/:gameId" element={<GameplayPage />} />
+
+      {/* Spectate - read-only view of any game */}
+      <Route path="/spectate/:gameId" element={<SpectateGamePage />} />
 
       {/* Leaderboard */}
       <Route path="/leaderboard" element={<LeaderboardPage />} />

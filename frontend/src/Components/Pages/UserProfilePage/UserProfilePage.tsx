@@ -1,7 +1,7 @@
 import { FC, useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ApiService from '../../../services/ApiService';
-import type { UserStatsResponse, UserResponse } from '../../../datamodels/users';
+import type { UserStatsResponse, UserResponse, ActiveGameRecord } from '../../../datamodels/users';
 import styles from './UserProfilePage.module.scss';
 
 /**
@@ -188,7 +188,15 @@ const UserProfilePage: FC = () => {
   };
 
   const handleGameClick = (gameId: number) => {
-    navigate(`/game/${gameId}`);
+    if (currentUser && (currentUser.id === userStats?.id || currentUser.id === userIdNum)) {
+      navigate(`/game/${gameId}`);
+    } else {
+      navigate(`/spectate/${gameId}`);
+    }
+  };
+
+  const handleSpectateClick = (gameId: number) => {
+    navigate(`/spectate/${gameId}`);
   };
 
   if (loading) {
@@ -281,6 +289,36 @@ const UserProfilePage: FC = () => {
             </div>
           </div>
         </section>
+
+        {/* Active Games - In Progress */}
+        {userStats.active_games && userStats.active_games.length > 0 && (
+          <section className={styles.recentGamesCard}>
+            <h2>Active Games ({userStats.active_games.length})</h2>
+            <div className={styles.gamesGrid}>
+              {userStats.active_games.map((game: ActiveGameRecord) => {
+                const opponent = game.x_user_id === userIdNum ? game.o_user : game.x_user;
+                return (
+                  <div
+                    key={game.id}
+                    className={`${styles.gameTile} ${styles.active}`}
+                    onClick={() => handleSpectateClick(game.id)}
+                  >
+                    <div className={styles.resultBadge}>IN PROGRESS</div>
+                    {opponent && (
+                      <div className={styles.tileOpponent}>
+                        vs {opponent.username}
+                      </div>
+                    )}
+                    <div className={styles.gameDate}>
+                      {game.created_at ? new Date(game.created_at).toLocaleDateString() : 'Unknown'}
+                    </div>
+                    <div className={styles.spectateHint}>Click to spectate</div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {/* Recent Games Card - Full Width with Tiles */}
         {userStats.recent_games.length > 0 && (

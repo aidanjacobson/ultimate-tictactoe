@@ -181,6 +181,10 @@ export class ApiService {
         return this.request('GET', `/games/${gameId}`);
     }
 
+    static async spectateGame(gameId: number): Promise<GameResponse> {
+        return this.request('GET', `/games/${gameId}/spectate`);
+    }
+
     static async getGames(): Promise<GameResponse[]> {
         return this.request('GET', '/games');
     }
