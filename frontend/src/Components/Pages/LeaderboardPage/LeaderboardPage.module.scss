@@ -6,95 +6,381 @@
   min-height: 100vh;
   background-color: $color-bg-primary;
   color: $color-text-primary;
-  padding: $spacing-xl;
+  padding: $spacing-lg;
+
+  @include tablet-and-up {
+    padding: $spacing-xl;
+  }
+
+  @include desktop-and-up {
+    padding: $spacing-2xl $spacing-xl;
+  }
 }
 
-.header {
-  margin-bottom: $spacing-3xl;
+.pageHeader {
+  margin-bottom: $spacing-2xl;
   padding-bottom: $spacing-lg;
   border-bottom: 1px solid $color-bg-tertiary;
+  position: relative;
 
   h1 {
     @include heading-h1;
+    margin-bottom: $spacing-sm;
+    text-align: center;
+  }
+}
+
+.headerContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-lg;
+  position: relative;
+
+  @include tablet-and-up {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+.subtitle {
+  color: $color-text-secondary;
+  font-size: 1.1rem;
+  margin: 0;
+  text-align: center;
+}
+
+.myProfileButton {
+  padding: $spacing-md $spacing-lg;
+  background-color: $color-primary;
+  color: white;
+  border: none;
+  border-radius: $radius-md;
+  font-size: 1rem;
+  font-weight: $font-weight-medium;
+  cursor: pointer;
+  transition: all $transition-standard;
+  white-space: nowrap;
+  position: absolute;
+  right: 0;
+  top: 0;
+
+  &:hover {
+    background-color: $color-primary-dark;
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  @include mobile-only {
+    position: static;
+    width: 100%;
   }
 }
 
 .main {
-  @include container;
-  @include flex-column;
+  width: 100%;
+  max-width: $container-max-width;
+  margin: 0 auto;
+}
+
+.loadingMessage,
+.errorMessage {
+  text-align: center;
+  padding: $spacing-2xl;
+  color: $color-text-secondary;
+}
+
+.errorMessage {
+  @include card-base;
+  background-color: rgba(239, 68, 68, 0.1);
+  border-left: 4px solid $color-danger;
+  color: $color-danger;
+  text-align: left;
+}
+
+// ── Podium ────────────────────────────────────────────────────────────────────
+
+.podiumSection {
+  @include card-base;
+  padding: $spacing-xl;
+  margin-bottom: $spacing-xl;
+  background: linear-gradient(160deg, #1a2540 0%, $color-bg-secondary 100%);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+.podiumHeader {
+  text-align: center;
+  margin-bottom: $spacing-2xl;
+}
+
+.podiumTitle {
+  @include heading-h2;
+  margin: 0 0 $spacing-sm 0;
+  color: $color-text-primary;
+}
+
+.podiumSubtitle {
+  font-size: $font-size-small;
+  color: $color-text-tertiary;
+  margin: 0;
+}
+
+.podiumStage {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: $spacing-md;
+
+  @include tablet-and-up {
+    gap: $spacing-xl;
+  }
+}
+
+.podiumSlot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  max-width: 220px;
+}
+
+.podiumPlayerInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-md;
+  padding: $spacing-md;
+  border-radius: $radius-lg;
+  width: 100%;
+  transition: background-color $transition-fast;
+
+  &.podiumCurrentUser {
+    background-color: rgba(59, 130, 246, 0.12);
+    outline: 1px solid rgba(59, 130, 246, 0.35);
+  }
+}
+
+.podiumName {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $color-text-primary;
+  font-size: $font-size-body;
+  font-weight: $font-weight-semi-bold;
+  text-align: center;
+  padding: 0;
+  transition: color $transition-fast;
+  line-height: $line-height-compact;
+
+  &:hover {
+    color: $color-primary;
+  }
+}
+
+.podiumUsername {
+  font-size: $font-size-small;
+  color: $color-text-tertiary;
+}
+
+.podiumScore {
+  font-size: $font-size-h2;
+  font-weight: $font-weight-bold;
+  line-height: 1;
+}
+
+.podiumRecord {
+  font-size: $font-size-label;
+  color: $color-text-tertiary;
+  letter-spacing: 0.03em;
+}
+
+// Platform block — height varies by rank
+.podiumBlock {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-md $radius-md 0 0;
+  font-size: $font-size-body;
+  font-weight: $font-weight-bold;
+  color: #0f172a;
+  min-height: 50px;
+}
+
+.podiumRankLabel {
+  letter-spacing: 0.04em;
+}
+
+// 1st — tallest, gold
+.podiumRank1 {
+  .podiumScore { color: #f59e0b; }
+  .podiumBlock {
+    background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+    min-height: 90px;
+  }
+}
+
+// 2nd — medium, silver
+.podiumRank2 {
+  .podiumScore { color: #94a3b8; }
+  .podiumBlock {
+    background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%);
+    min-height: 65px;
+  }
+}
+
+// 3rd — shortest, bronze
+.podiumRank3 {
+  .podiumScore { color: #cd7c3a; }
+  .podiumBlock {
+    background: linear-gradient(180deg, #e0956a 0%, #a06030 100%);
+    min-height: 48px;
+  }
+}
+
+// ── Ranking grid ──────────────────────────────────────────────────────────────
+
+.rankingGrid {
+  display: grid;
+  grid-template-columns: 1fr;
   gap: $spacing-xl;
 
-  @include desktop-and-up {
-    display: grid;
-    grid-template-columns: 1fr 300px;
-    grid-template-rows: auto 1fr;
+  @include tablet-and-up {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-.filterSection {
+.rankingCard {
   @include card-base;
+  padding: $spacing-xl;
+}
 
-  h2 {
-    @include heading-h3;
-    margin-bottom: $spacing-lg;
-    color: $color-primary;
+.cardHeader {
+  margin-bottom: $spacing-lg;
+  padding-bottom: $spacing-md;
+  border-bottom: 1px solid $color-bg-tertiary;
+}
+
+.cardTitle {
+  @include heading-h3;
+  margin: 0 0 $spacing-xs 0;
+  color: $color-primary;
+}
+
+.cardSubtitle {
+  font-size: $font-size-small;
+  color: $color-text-tertiary;
+  margin: 0;
+}
+
+.rankingList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.rankingRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background-color: $color-bg-tertiary;
   }
 
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  &.currentUser {
+    background-color: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
 
-    li {
-      @include small-text;
-      padding: $spacing-md 0;
-      border-bottom: 1px solid $color-bg-tertiary;
-      color: $color-text-secondary;
-
-      &:last-child {
-        border-bottom: none;
-      }
+    &:hover {
+      background-color: rgba(59, 130, 246, 0.15);
     }
   }
+}
 
-  @include desktop-and-up {
-    grid-column: 1 / -1;
+.rank {
+  font-size: $font-size-small;
+  font-weight: $font-weight-semi-bold;
+  color: $color-text-tertiary;
+  min-width: 36px;
+  text-align: center;
+  flex-shrink: 0;
+
+  &.rank1 {
+    color: #f59e0b;
+    font-size: $font-size-body;
+  }
+
+  &.rank2 {
+    color: #94a3b8;
+    font-size: $font-size-body;
+  }
+
+  &.rank3 {
+    color: #cd7c3a;
+    font-size: $font-size-body;
   }
 }
 
-.leaderboardSection {
-  @include card-base;
+.playerName {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $color-text-primary;
+  font-size: $font-size-body;
+  font-weight: $font-weight-medium;
+  text-align: left;
+  padding: 0;
+  transition: color $transition-fast;
+  min-width: 0;
 
-  h2 {
-    @include heading-h2;
-    margin-bottom: $spacing-lg;
+  &:hover {
     color: $color-primary;
   }
-
-  p {
-    @include body-text;
-    margin-bottom: $spacing-md;
-    color: $color-text-secondary;
-  }
 }
 
-.personalRank {
-  @include card-base;
-  height: fit-content;
+.playerUsername {
+  font-size: $font-size-small;
+  color: $color-text-tertiary;
+  font-weight: $font-weight-normal;
+}
 
-  h3 {
-    @include heading-h3;
-    margin-bottom: $spacing-lg;
-    color: $color-secondary;
-  }
+.statValue {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  font-size: $font-size-body-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
 
-  p {
-    @include body-text;
-    margin-bottom: $spacing-md;
-    color: $color-text-secondary;
-  }
+.statLabel {
+  font-size: $font-size-label;
+  font-weight: $font-weight-normal;
+  color: $color-text-tertiary;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
 
-  @include mobile-only {
-    margin-top: $spacing-xl;
-  }
+.emptyState {
+  color: $color-text-tertiary;
+  font-size: $font-size-small;
+  text-align: center;
+  padding: $spacing-lg 0;
 }

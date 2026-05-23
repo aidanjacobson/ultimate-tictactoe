@@ -1,5 +1,5 @@
 import type { GameCreate, GameResponse, GameTurn } from "../datamodels/tictactoe";
-import type { UserCreate, UserResponse, UserUpdate } from "../datamodels/users";
+import type { UserCreate, UserResponse, UserUpdate, ScoreboardEntryResponse } from "../datamodels/users";
 import type { GameInviteResponse } from "../datamodels/gameinvites";
 
 // Prepend BASE_URL if set, otherwise use /api
@@ -226,6 +226,10 @@ export class ApiService {
     // User Stats and Admin Operations
     static async getUserStats(userId: number): Promise<any> {
         return this.request('GET', `/users/${userId}/stats`);
+    }
+
+    static async getScoreboard(): Promise<ScoreboardEntryResponse[]> {
+        return this.request('GET', '/scoreboard');
     }
 
     static async adminResetUsername(userId: number, newUsername: string): Promise<UserResponse> {

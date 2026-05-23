@@ -38,6 +38,17 @@ export interface ActiveGameRecord {
     o_user: UserResponse | null;
 }
 
+export interface ScoreboardEntryResponse {
+    id: number;
+    name: string;
+    username: string;
+    wins: number;
+    losses: number;
+    ties: number;
+    total_games: number;
+    win_ratio: number;
+}
+
 export interface UserStatsResponse {
     id: number;
     name: string;

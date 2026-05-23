@@ -29,7 +29,7 @@ const Header: FC = () => {
         {/* App Name */}
         <div className={styles.brand}>
           <div className={styles.brandContent}>
-            <h1 className={styles.title}>Ultimate TicTacToe</h1>
+            <h1 className={styles.title}><a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); }}>Ultimate TicTacToe</a></h1>
             <p className={styles.subtitle}>Now with 100% more Kubernetes!</p>
           </div>
         </div>
@@ -56,7 +56,7 @@ const Header: FC = () => {
           >
             Users
           </a>
-          {/* <a
+          <a
             href="/leaderboard"
             className={`${styles.navLink} ${isActive('/leaderboard') ? styles.active : ''}`}
             onClick={(e) => {
@@ -64,18 +64,8 @@ const Header: FC = () => {
               navigate('/leaderboard');
             }}
           >
-            Leaderboard
+            Scoreboard
           </a>
-          <a
-            href="/inbox"
-            className={`${styles.navLink} ${isActive('/inbox') ? styles.active : ''}`}
-            onClick={(e) => {
-              e.preventDefault();
-              navigate('/inbox');
-            }}
-          >
-            Inbox
-          </a> */}
         </nav>
 
         {/* Action Buttons */}

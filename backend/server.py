@@ -142,6 +142,20 @@ class UserStatsResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class ScoreboardEntryResponse(BaseModel):
+    """User stats for scoreboard rankings"""
+    id: int
+    name: str
+    username: str
+    wins: int
+    losses: int
+    ties: int
+    total_games: int
+    win_ratio: float
+
+    class Config:
+        from_attributes = True
+
 class LoginRequest(BaseModel):
     username: str
     password: str
@@ -443,6 +457,48 @@ class Server:
                 recent_games=recent_games_list,
                 active_games=active_games_list,
             )
+
+        @self.app.get("/api/scoreboard", response_model=List[ScoreboardEntryResponse])
+        @auth_logged_in()
+        async def get_scoreboard(auth_context: AuthContext = Depends(get_current_auth_context)):
+            """Get aggregated stats for all users for global rankings"""
+            require_logged_in(auth_context)
+
+            users = self.user_service.get_all_users()
+            entries = []
+
+            for user in users:
+                wins = 0
+                losses = 0
+                ties = 0
+
+                all_games = list(user.games_as_x) + list(user.games_as_o)
+
+                for game in all_games:
+                    if not game.finished:
+                        continue
+                    if game.winner_id == user.id:
+                        wins += 1
+                    elif game.winner_id is None:
+                        ties += 1
+                    else:
+                        losses += 1
+
+                total_games = wins + losses + ties
+                win_ratio = wins / total_games if total_games > 0 else 0.0
+
+                entries.append(ScoreboardEntryResponse(
+                    id=user.id,
+                    name=user.name,
+                    username=user.username,
+                    wins=wins,
+                    losses=losses,
+                    ties=ties,
+                    total_games=total_games,
+                    win_ratio=round(win_ratio, 3),
+                ))
+
+            return entries
 
         # ===== Admin User Management Routes =====
 
