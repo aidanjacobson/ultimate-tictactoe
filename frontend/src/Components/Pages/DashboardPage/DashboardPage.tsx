@@ -7,6 +7,8 @@ import type { UserResponse } from '../../../datamodels/users';
 import type { GameInviteResponse } from '../../../datamodels/gameinvites';
 import styles from './DashboardPage.module.scss';
 
+const FINISHED_GAMES_PER_PAGE = 9;
+
 /**
  * DashboardPage - Main hub for user after login
  * Route: /
@@ -28,6 +30,7 @@ const DashboardPage: FC = () => {
   const [yourTurnGames, setYourTurnGames] = useState<GameResponse[]>([]);
   const [opponentTurnGames, setOpponentTurnGames] = useState<GameResponse[]>([]);
   const [finishedGames, setFinishedGames] = useState<GameResponse[]>([]);
+  const [finishedGamesPage, setFinishedGamesPage] = useState(1);
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -94,6 +97,23 @@ const DashboardPage: FC = () => {
   const handleInviteClick = (inviteId: number) => {
     navigate(`/invites/game/use/${inviteId}`);
   };
+
+  const finishedGamesTotalPages = Math.max(
+    1,
+    Math.ceil(finishedGames.length / FINISHED_GAMES_PER_PAGE),
+  );
+  const finishedGamesStart = (finishedGamesPage - 1) * FINISHED_GAMES_PER_PAGE;
+  const finishedGamesOnPage = finishedGames.slice(
+    finishedGamesStart,
+    finishedGamesStart + FINISHED_GAMES_PER_PAGE,
+  );
+
+  useEffect(() => {
+    setFinishedGamesPage((prevPage) => {
+      if (prevPage < 1) return 1;
+      return prevPage > finishedGamesTotalPages ? finishedGamesTotalPages : prevPage;
+    });
+  }, [finishedGamesTotalPages]);
 
   if (loading) {
     return (
@@ -187,7 +207,7 @@ const DashboardPage: FC = () => {
           <section className={styles.section}>
             <h2>Finished Games</h2>
             <div className={styles.gamesList}>
-              {finishedGames.map((game) => (
+              {finishedGamesOnPage.map((game) => (
                 <GameCard
                   key={game.id}
                   game={game}
@@ -195,6 +215,29 @@ const DashboardPage: FC = () => {
                 />
               ))}
             </div>
+            {finishedGamesTotalPages > 1 && (
+              <div className={styles.pagination}>
+                <button
+                  className={styles.button}
+                  type="button"
+                  onClick={() => setFinishedGamesPage((prev) => prev - 1)}
+                  disabled={finishedGamesPage === 1}
+                >
+                  Previous
+                </button>
+                <span className={styles.pageIndicator}>
+                  Page {finishedGamesPage} of {finishedGamesTotalPages}
+                </span>
+                <button
+                  className={styles.button}
+                  type="button"
+                  onClick={() => setFinishedGamesPage((prev) => prev + 1)}
+                  disabled={finishedGamesPage === finishedGamesTotalPages}
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </section>
         )}
 
