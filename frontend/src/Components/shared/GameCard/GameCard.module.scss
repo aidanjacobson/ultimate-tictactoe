@@ -5,6 +5,7 @@
   display: flex;
   flex-direction: column;
   gap: $spacing-md;
+  min-width: 0;
   padding: $spacing-lg;
   background-color: $color-bg-secondary;
   border: 1px solid $color-bg-tertiary;
@@ -30,6 +31,7 @@
   align-items: center;
   justify-content: space-between;
   gap: $spacing-md;
+  min-width: 0;
 }
 
 .player {
@@ -37,6 +39,7 @@
   align-items: center;
   gap: $spacing-sm;
   flex: 1;
+  min-width: 0;
 
   &:last-child {
     justify-content: flex-end;
@@ -58,7 +61,10 @@
 
 .name {
   @include body-text;
+  display: block;
+  flex: 1;
   font-weight: 500;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
