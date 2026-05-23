@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends
-from fastapi.responses import JSONResponse, PlainTextResponse, FileResponse
+from fastapi.responses import JSONResponse, PlainTextResponse, FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
@@ -14,6 +14,9 @@ from database.schema import SessionLocal, Game, User, GameInviteRequest
 from auth import create_token, auth_none, auth_logged_in, auth_as_id, auth_admin, auth_as_id_in_game, auth_as_inviter, get_current_auth_context, AuthContext, require_logged_in, require_admin, require_as_id, require_as_id_in_game, require_as_inviter
 
 import os
+import json
+import zipfile
+import io
 
 sessions = {}
 
@@ -492,6 +495,51 @@ class Server:
             try:
                 self.game_service.delete_game(game_id)
                 return {"message": f"Game {game_id} deleted successfully"}
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=str(e))
+
+        @self.app.get("/api/games/export/zip")
+        @auth_admin()
+        async def export_games(auth_context: AuthContext = Depends(get_current_auth_context)):
+            """Export all games as a zipped JSON archive (admin only)"""
+            # Enforce admin requirement
+            require_admin(auth_context)
+            
+            try:
+                # Get all games
+                games = self.db.query(Game).all()
+                
+                # Create in-memory zip file
+                zip_buffer = io.BytesIO()
+                with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                    for game in games:
+                        # Get game state (from DB or file)
+                        game_data = None
+                        db_type = os.environ.get("DB_TYPE", "sqlite").lower()
+                        
+                        if db_type == "postgres":
+                            # Get from database
+                            if game.game_state:
+                                game_data = game.game_state
+                        else:
+                            # Get from JSON file
+                            games_dir = os.path.join(os.environ.get("DATA_DIR", "./devdata"), "games")
+                            file_path = os.path.join(games_dir, f"{game.id}.json")
+                            if os.path.exists(file_path):
+                                with open(file_path, 'r') as f:
+                                    game_data = json.load(f)
+                        
+                        if game_data:
+                            # Add to zip
+                            game_json = json.dumps(game_data, indent=2)
+                            zip_file.writestr(f"game_{game.id}.json", game_json)
+                
+                zip_buffer.seek(0)
+                return StreamingResponse(
+                    iter([zip_buffer.getvalue()]),
+                    media_type="application/zip",
+                    headers={"Content-Disposition": "attachment; filename=games.zip"}
+                )
             except Exception as e:
                 raise HTTPException(status_code=400, detail=str(e))
 

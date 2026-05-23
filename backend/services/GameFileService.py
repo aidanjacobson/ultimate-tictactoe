@@ -7,14 +7,19 @@ from services.TicTacToeService import TicTacToeService
 from database.schema import SessionLocal, Game, User
 
 DATA_DIR = os.environ.get("DATA_DIR", "./devdata")
+DB_TYPE = os.environ.get("DB_TYPE", "sqlite").lower()
 GAMES_DIR = os.path.join(DATA_DIR, "games")
-os.makedirs(GAMES_DIR, exist_ok=True)
+
+# Only create games directory for SQLite
+if DB_TYPE == "sqlite":
+    os.makedirs(GAMES_DIR, exist_ok=True)
 
 
 class GameFileService:
     def __init__(self, tictactoe_service: TicTacToeService):
         self.tictactoe_service = tictactoe_service
         self.db = SessionLocal()
+        self.use_db = DB_TYPE == "postgres"
 
     def start_new_game(self, game_id: int) -> UltimateTicTacToe:
         """
@@ -64,20 +69,29 @@ class GameFileService:
 
     def save_game(self, game_id: int, game: UltimateTicTacToe) -> None:
         """
-        Save the game state to a JSON file.
+        Save the game state to either PostgreSQL database or JSON file.
         
         Args:
             game_id: The unique ID for the game
             game: The UltimateTicTacToe game object to save
         """
-        file_path = os.path.join(GAMES_DIR, f"{game_id}.json")
         game_data = self._serialize_game(game)
-        with open(file_path, 'w') as f:
-            json.dump(game_data, f, indent=2)
+        
+        if self.use_db:
+            # Save to PostgreSQL database
+            game_record = self.db.query(Game).filter(Game.id == game_id).first()
+            if game_record:
+                game_record.game_state = game_data
+                self.db.commit()
+        else:
+            # Save to JSON file (SQLite)
+            file_path = os.path.join(GAMES_DIR, f"{game_id}.json")
+            with open(file_path, 'w') as f:
+                json.dump(game_data, f, indent=2)
 
     def load_game(self, game_id: int) -> Optional[UltimateTicTacToe]:
         """
-        Load a game state from a JSON file.
+        Load a game state from either PostgreSQL database or JSON file.
         
         Args:
             game_id: The unique ID for the game
@@ -85,30 +99,47 @@ class GameFileService:
         Returns:
             The UltimateTicTacToe game object, or None if the game doesn't exist
         """
-        file_path = os.path.join(GAMES_DIR, f"{game_id}.json")
-        if not os.path.exists(file_path):
-            return None
-        
-        with open(file_path, 'r') as f:
-            game_data = json.load(f)
-        
-        return self._deserialize_game(game_data)
+        if self.use_db:
+            # Load from PostgreSQL database
+            game_record = self.db.query(Game).filter(Game.id == game_id).first()
+            if not game_record or not game_record.game_state:
+                return None
+            return self._deserialize_game(game_record.game_state)
+        else:
+            # Load from JSON file (SQLite)
+            file_path = os.path.join(GAMES_DIR, f"{game_id}.json")
+            if not os.path.exists(file_path):
+                return None
+            
+            with open(file_path, 'r') as f:
+                game_data = json.load(f)
+            
+            return self._deserialize_game(game_data)
 
     def delete_game(self, game_id: int) -> None:
         """
-        Delete a game's JSON file.
+        Delete a game's state (from database or JSON file).
         
         Args:
             game_id: The unique ID for the game
         
         Raises:
-            ValueError: If the game file doesn't exist
+            ValueError: If the game doesn't exist
         """
-        file_path = os.path.join(GAMES_DIR, f"{game_id}.json")
-        if not os.path.exists(file_path):
-            raise ValueError(f"Game file for game {game_id} not found")
-        
-        os.remove(file_path)
+        if self.use_db:
+            # Clear game state from PostgreSQL database
+            game_record = self.db.query(Game).filter(Game.id == game_id).first()
+            if not game_record:
+                raise ValueError(f"Game {game_id} not found in database")
+            game_record.game_state = None
+            self.db.commit()
+        else:
+            # Delete JSON file (SQLite)
+            file_path = os.path.join(GAMES_DIR, f"{game_id}.json")
+            if not os.path.exists(file_path):
+                raise ValueError(f"Game file for game {game_id} not found")
+            
+            os.remove(file_path)
 
     def _serialize_game(self, game: UltimateTicTacToe) -> dict:
         """Convert a game object to a JSON-serializable dictionary."""
