@@ -11,6 +11,7 @@ from database.schema import Game, SessionLocal, engine
 
 DATA_DIR = os.environ.get("DATA_DIR", "./devdata")
 GAMES_DIR = os.path.join(DATA_DIR, "games")
+DB_TYPE = os.environ.get("DB_TYPE", "sqlite").lower()
 
 
 def add_game_state_column(db: Optional[Session] = None) -> bool:
@@ -69,7 +70,7 @@ def repair_winner_ids(db: Optional[Session] = None) -> int:
         result = session.execute(text("""
             SELECT id, x_user_id, o_user_id, winner_id
             FROM games 
-            WHERE finished = 1 AND winner_id IS NULL
+            WHERE finished = TRUE AND winner_id IS NULL
         """))
         
         finished_games_without_winner = result.fetchall()
@@ -156,52 +157,33 @@ def add_user_created_at_column(db: Optional[Session] = None) -> bool:
         # Try to add the column
         print("Adding created_at column to users table...")
         try:
-            # Try PostgreSQL first (with DEFAULT CURRENT_TIMESTAMP)
-            session.execute(text(
-                "ALTER TABLE users ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP"
-            ))
-            session.commit()
-            print("✓ Successfully added created_at column with PostgreSQL-style default")
-            return True
-        except Exception as pg_err:
-            # PostgreSQL error - check if column already exists
-            error_msg = str(pg_err).lower()
-            if 'already exists' in error_msg or 'duplicate' in error_msg:
-                print("✓ created_at column already exists")
-                return False
-            
-            # Likely a SQLite error (doesn't support function defaults in ALTER TABLE)
-            # Try SQLite approach: add with NULL default, then update
-            try:
-                session.rollback()
-                print("PostgreSQL approach failed, trying SQLite approach...")
-                
-                # Add column with NULL default (SQLite-compatible)
+            if DB_TYPE == "postgres":
+                session.execute(text(
+                    "ALTER TABLE users ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+                ))
+                session.commit()
+            else:
+                # SQLite doesn't support function defaults in ALTER TABLE, so add NULL first
                 session.execute(text(
                     "ALTER TABLE users ADD COLUMN created_at DATETIME DEFAULT NULL"
                 ))
                 session.commit()
-                print("✓ Added created_at column (NULL default)")
-                
-                # Update existing rows to have current timestamp
                 now = datetime.utcnow()
                 session.execute(text(
                     "UPDATE users SET created_at = :now WHERE created_at IS NULL"
                 ), {"now": now})
                 session.commit()
                 print(f"✓ Updated existing users with timestamp: {now}")
-                
-                return True
-            except Exception as sqlite_err:
-                # Check if column already exists
-                error_msg = str(sqlite_err).lower()
-                if 'already exists' in error_msg or 'duplicate' in error_msg:
-                    print("✓ created_at column already exists")
-                    return False
-                else:
-                    session.rollback()
-                    print(f"Warning: Error adding created_at column: {sqlite_err}")
-                    return False
+            print("✓ Successfully added created_at column")
+            return True
+        except Exception as err:
+            error_msg = str(err).lower()
+            if 'already exists' in error_msg or 'duplicate' in error_msg:
+                print("✓ created_at column already exists")
+                return False
+            session.rollback()
+            print(f"Warning: Error adding created_at column: {err}")
+            return False
         
     finally:
         if db is None:
@@ -235,15 +217,15 @@ def add_user_password_must_reset_column(db: Optional[Session] = None) -> bool:
         
         # Try to add the column
         print("Adding password_must_reset column to users table...")
+        default = "FALSE" if DB_TYPE == "postgres" else "0"
         try:
             session.execute(text(
-                "ALTER TABLE users ADD COLUMN password_must_reset BOOLEAN DEFAULT 0"
+                f"ALTER TABLE users ADD COLUMN password_must_reset BOOLEAN DEFAULT {default}"
             ))
             session.commit()
             print("✓ Successfully added password_must_reset column")
             return True
         except Exception as add_err:
-            # Check if error is "column already exists"
             error_msg = str(add_err).lower()
             if 'already exists' in error_msg or 'duplicate' in error_msg:
                 print("✓ password_must_reset column already exists")

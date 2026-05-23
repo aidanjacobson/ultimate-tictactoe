@@ -55,7 +55,7 @@ def main():
     add_game_state_column()
     add_user_created_at_column()
     add_user_password_must_reset_column()
-    repair_winner_ids()
+    # repair_winner_ids()
     print("Database migrations completed")
 
     # Initialize default admin user if no users exist
