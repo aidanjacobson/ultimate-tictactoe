@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import type { UltimateTicTacToeGameState, Position } from '../../datamodels/tictactoe'
 import './UltimateTicTacToeGameBoard.scss'
 
@@ -49,20 +50,27 @@ export default function UltimateTicTacToeGameBoard({ gameState, activeCorner, on
     }
   }
 
-  const getWinningPositions = (subgameKey: Position): Set<Position> => {
-    const subgame = gameState[subgameKey]
-    if (!subgame.finished || !subgame.winner) return new Set<Position>()
+  const winningPositionsBySubgame = useMemo<Record<Position, Set<Position>>>(() => {
+    const subgames = {} as Record<Position, Set<Position>>
 
-    const winningPositions = new Set<Position>()
-    WINNING_COMBINATIONS.forEach((combo) => {
-      const values = combo.map((position) => subgame[position])
-      if (values[0] && values.every((value) => value === values[0])) {
-        combo.forEach((position) => winningPositions.add(position))
+    POSITIONS.forEach((subgameKey) => {
+      const subgame = gameState[subgameKey]
+      const winningPositions = new Set<Position>()
+
+      if (subgame.finished && subgame.winner) {
+        WINNING_COMBINATIONS.forEach((combo) => {
+          const values = combo.map((position) => subgame[position])
+          if (values[0] && values.every((value) => value === values[0])) {
+            combo.forEach((position) => winningPositions.add(position))
+          }
+        })
       }
+
+      subgames[subgameKey] = winningPositions
     })
 
-    return winningPositions
-  }
+    return subgames
+  }, [gameState])
 
   const renderSubgame = (subgameKey: Position) => {
     const subgame = gameState[subgameKey]
@@ -72,7 +80,7 @@ export default function UltimateTicTacToeGameBoard({ gameState, activeCorner, on
     const isActive = activeCorner === subgameKey
     const canPlayInThisCorner = isPlayerTurn && (activeCorner === subgameKey || activeCorner === '')
     const isActivePlayerTurn = isActive && isPlayerTurn
-    const winningPositions = getWinningPositions(subgameKey)
+    const winningPositions = winningPositionsBySubgame[subgameKey]
 
     return (
       <div key={subgameKey} className={`subgame ${isFinished ? 'finished' : ''} ${isActive ? 'active' : ''} ${isActivePlayerTurn ? 'active-player-turn' : ''}`}>
