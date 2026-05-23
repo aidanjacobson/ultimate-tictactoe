@@ -46,7 +46,7 @@ def main():
     print("Database initialized successfully")
 
     # Run database migrations
-    print("Running database migrations...")
+    #print("Running database migrations...")
     #add_game_state_column()
     #repair_winner_ids()
 
