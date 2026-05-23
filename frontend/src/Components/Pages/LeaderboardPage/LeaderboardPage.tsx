@@ -7,10 +7,11 @@ import styles from './LeaderboardPage.module.scss';
 
 // Wilson score lower bound (95% confidence interval for a proportion)
 // Rewards high win rate AND sample size — avoids inflating players with few games
-const wilsonScore = (wins: number, total: number): number => {
+const wilsonScore = (wins: number, losses: number, ties: number): number => {
+  const total = wins + losses + ties;
   if (total === 0) return 0;
   const z = 1.96;
-  const p = wins / total;
+  const p = (wins + 0.5 * ties) / total;  // ties count as half
   const numerator = p + (z * z) / (2 * total) - z * Math.sqrt((p * (1 - p)) / total + (z * z) / (4 * total * total));
   const denominator = 1 + (z * z) / total;
   return Math.max(0, numerator / denominator);
@@ -52,7 +53,7 @@ const CATEGORIES: RankingCategory[] = [
     title: 'Wilson Score',
     subtitle: 'Win rate adjusted for sample size — the most reliable ranking',
     statLabel: 'Score',
-    getStat: (e) => wilsonScore(e.wins, e.total_games),
+    getStat: (e) => wilsonScore(e.wins, e.losses, e.ties),
     formatStat: (v) => (v * 100).toFixed(1),
     minGames: 3,
   },
@@ -111,7 +112,7 @@ const LeaderboardPage: FC = () => {
   const wilsonTop3 = (() => {
     const qualified = entries.filter((e) => e.total_games >= 3);
     return [...qualified]
-      .sort((a, b) => wilsonScore(b.wins, b.total_games) - wilsonScore(a.wins, a.total_games))
+      .sort((a, b) => wilsonScore(b.wins, b.losses, b.ties) - wilsonScore(a.wins, a.losses, a.ties))
       .slice(0, 3);
   })();
 
@@ -163,7 +164,7 @@ const LeaderboardPage: FC = () => {
                     const entry = wilsonTop3[topIdx];
                     if (!entry) return null;
                     const rank = topIdx + 1; // 1-indexed
-                    const score = wilsonScore(entry.wins, entry.total_games);
+                    const score = wilsonScore(entry.wins, entry.losses, entry.ties);
                     const isCurrentUser = currentUser?.id === entry.id;
                     return (
                       <div
