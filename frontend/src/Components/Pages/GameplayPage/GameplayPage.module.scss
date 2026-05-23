@@ -47,15 +47,17 @@
 .playerHeader {
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-areas:
-    "x-name o-name"
-    "vs vs"
-    "x-username o-username";
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   justify-items: center;
-  row-gap: $spacing-sm;
   column-gap: $spacing-lg;
+}
+
+.playerStack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-xs;
 }
 
 .playerName {
@@ -73,14 +75,11 @@
 }
 
 .vs {
-  grid-area: vs;
   font-size: $font-size-h2;
   font-weight: $font-weight-bold;
   color: $color-info;
-  margin: 0 $spacing-md;
 
   @media (max-width: 480px) {
-    margin: 0;
     font-size: 0.9rem;
   }
 }
@@ -91,20 +90,12 @@
   font-weight: $font-weight-medium;
 }
 
-.xPlayerName {
-  grid-area: x-name;
+.xPlayerStack {
+  justify-self: end;
 }
 
-.oPlayerName {
-  grid-area: o-name;
-}
-
-.xPlayerUsername {
-  grid-area: x-username;
-}
-
-.oPlayerUsername {
-  grid-area: o-username;
+.oPlayerStack {
+  justify-self: start;
 }
 
 .main {
