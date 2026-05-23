@@ -9,6 +9,9 @@ import RespondToGameInvitePage from './Components/Pages/RespondToGameInvitePage/
 import UseInvitePage from './Components/Pages/UseInvitePage/UseInvitePage';
 import InboxPage from './Components/Pages/InboxPage/InboxPage';
 import AdminDashboardPage from './Components/Pages/AdminDashboardPage/AdminDashboardPage';
+import UsersPage from './Components/Pages/UsersPage/UsersPage';
+import UserProfilePage from './Components/Pages/UserProfilePage/UserProfilePage';
+import ChangePasswordPage from './Components/Pages/ChangePasswordPage/ChangePasswordPage';
 
 /**
  * Application Routes Component
@@ -31,6 +34,10 @@ export const AppRoutes = () => {
       {/* Leaderboard */}
       <Route path="/leaderboard" element={<LeaderboardPage />} />
 
+      {/* Users - Browse and View Profiles */}
+      <Route path="/users" element={<UsersPage />} />
+      <Route path="/users/:userId" element={<UserProfilePage />} />
+
       {/* Invitations - User Invites */}
       <Route path="/invites/user/create" element={<InviteUserPage />} />
 
@@ -49,6 +56,9 @@ export const AppRoutes = () => {
 
       {/* Admin Dashboard (Admin-only) */}
       <Route path="/admin" element={<AdminDashboardPage />} />
+
+      {/* Change Password (required after admin password reset) */}
+      <Route path="/change-password" element={<ChangePasswordPage />} />
     </Routes>
   );
 };

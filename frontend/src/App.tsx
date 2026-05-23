@@ -18,19 +18,23 @@ function AppContent() {
   useEffect(() => {
     // Check if on public pages (login or invite join)
     const isPublicPage = location.pathname === '/login' || location.pathname.startsWith('/j')
-    
+    const isChangePasswordPage = location.pathname === '/change-password'
+
     if (!isPublicPage) {
       // Validate token on protected pages
       const validateToken = async () => {
         try {
-          await ApiService.validate()
+          const user = await ApiService.validate()
+          if (user.password_must_reset && !isChangePasswordPage) {
+            navigate('/change-password')
+          }
         } catch (error) {
           // Token invalid or expired, redirect to login
           ApiService.logout()
           navigate('/login')
         }
       }
-      
+
       validateToken()
     }
   }, [location.pathname, navigate])

@@ -1,6 +1,8 @@
-from typing import Optional, List
+from typing import Optional, List, Tuple
 from database.schema import SessionLocal, User
 import bcrypt
+import secrets
+import string
 
 
 class UserService:
@@ -118,12 +120,11 @@ class UserService:
             return None
         
         for key, value in kwargs.items():
-            if hasattr(user, key) and key in ['name', 'username', 'email', 'password', 'admin']:
-                if key == 'password':
-                    # Hash the password if it's being updated
-                    setattr(user, 'hashed_password', bcrypt.hashpw(value.encode('utf-8'), bcrypt.gensalt()).decode('utf-8'))
-                else:
-                    setattr(user, key, value)
+            if key == 'password':
+                user.hashed_password = bcrypt.hashpw(value.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                user.password_must_reset = False
+            elif key in ['name', 'username', 'email', 'admin'] and hasattr(user, key):
+                setattr(user, key, value)
         
         self.db.commit()
         self.db.refresh(user)
@@ -148,6 +149,87 @@ class UserService:
         user.email = f"deleted_user_{user.id}@example.com"
         self.db.commit()
         return True
+
+    def reset_username(self, user_id: int, new_username: str) -> Optional[User]:
+        """
+        Reset a user's username (admin operation).
+        
+        Args:
+            user_id: The user's ID
+            new_username: The new username
+        
+        Returns:
+            The updated User object, or None if not found or username taken
+        
+        Raises:
+            ValueError: If the new username is already taken
+        """
+        # Check if new username is already taken
+        existing_user = self.db.query(User).filter(
+            User.username == new_username,
+            User.id != user_id,
+            User.deleted == False
+        ).first()
+        
+        if existing_user:
+            raise ValueError(f"Username '{new_username}' is already taken")
+        
+        user = self.db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return None
+        
+        user.username = new_username
+        self.db.commit()
+        self.db.refresh(user)
+        return user
+
+    def reset_password(self, user_id: int) -> Optional[Tuple[User, str]]:
+        """
+        Reset a user's password with a randomly generated one and set password_must_reset flag.
+        
+        Args:
+            user_id: The user's ID
+        
+        Returns:
+            Tuple of (updated User object, new random password) or (None, "") if user not found
+        """
+        user = self.db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return None, ""
+        
+        # Generate a random password
+        # Use a mix of uppercase, lowercase, digits, and symbols
+        characters = string.ascii_letters + string.digits + "!@#$%^&*"
+        new_password = ''.join(secrets.choice(characters) for _ in range(12))
+        
+        # Hash and set the new password
+        hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        user.hashed_password = hashed_password
+        user.password_must_reset = True
+        
+        self.db.commit()
+        self.db.refresh(user)
+        
+        return user, new_password
+
+    def clear_password_must_reset(self, user_id: int) -> Optional[User]:
+        """
+        Clear the password_must_reset flag for a user.
+        
+        Args:
+            user_id: The user's ID
+        
+        Returns:
+            The updated User object, or None if not found
+        """
+        user = self.db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return None
+        
+        user.password_must_reset = False
+        self.db.commit()
+        self.db.refresh(user)
+        return user
 
     def close(self):
         """Close the database session."""

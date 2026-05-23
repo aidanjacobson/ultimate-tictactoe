@@ -218,6 +218,27 @@ export class ApiService {
             password,
         });
     }
+
+    // User Stats and Admin Operations
+    static async getUserStats(userId: number): Promise<any> {
+        return this.request('GET', `/users/${userId}/stats`);
+    }
+
+    static async adminResetUsername(userId: number, newUsername: string): Promise<UserResponse> {
+        return this.request('PUT', `/admin/users/${userId}/username`, {
+            new_username: newUsername,
+        });
+    }
+
+    static async adminResetPassword(userId: number): Promise<any> {
+        return this.request('PUT', `/admin/users/${userId}/password`);
+    }
+
+    static async adminDeleteUser(userId: number, confirm: boolean = false): Promise<any> {
+        return this.request('DELETE', `/admin/users/${userId}`, {
+            confirm,
+        });
+    }
 }
 
 export default ApiService;

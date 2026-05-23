@@ -20,8 +20,12 @@ const LoginPage: FC = () => {
     setLoading(true);
 
     try {
-      await ApiService.login({ username, password });
-      navigate('/');
+      const response = await ApiService.login({ username, password });
+      if (response.user.password_must_reset) {
+        navigate('/change-password');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       let message = 'Login failed. Please check your credentials.';
       

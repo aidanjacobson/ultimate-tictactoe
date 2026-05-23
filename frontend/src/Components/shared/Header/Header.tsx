@@ -46,6 +46,16 @@ const Header: FC = () => {
           >
             Dashboard
           </a>
+          <a
+            href="/users"
+            className={`${styles.navLink} ${isActive('/users') ? styles.active : ''}`}
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/users');
+            }}
+          >
+            Users
+          </a>
           {/* <a
             href="/leaderboard"
             className={`${styles.navLink} ${isActive('/leaderboard') ? styles.active : ''}`}

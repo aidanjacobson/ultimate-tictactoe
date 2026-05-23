@@ -17,6 +17,7 @@ import os
 import json
 import zipfile
 import io
+import datetime
 
 sessions = {}
 
@@ -33,11 +34,22 @@ class UserUpdate(BaseModel):
     username: Optional[str] = None
     email: Optional[str] = None
     password: Optional[str] = None
+class AdminResetUsernameRequest(BaseModel):
+    new_username: str
 
+class AdminResetPasswordResponse(BaseModel):
+    id: int
+    username: str
+    new_password: str
+    message: str = "Password has been reset. User must change password on next login."
+
+class AdminDeleteUserRequest(BaseModel):
+    confirm: bool = False  # Must be true to confirm deletion
 class UserResponse(BaseModel):
     id: int
     name: str
     username: str
+    password_must_reset: bool = False
 
     class Config:
         from_attributes = True
@@ -81,6 +93,38 @@ class GameResponse(BaseModel):
     x_user: Optional[UserResponse] = None
     o_user: Optional[UserResponse] = None
     last_move: Optional[Dict[str, str]] = None
+
+    class Config:
+        from_attributes = True
+
+class GameRecordResponse(BaseModel):
+    """Represents a game in user stats"""
+    id: int
+    x_user_id: int
+    o_user_id: int
+    winner_id: Optional[int]
+    created_at: datetime.datetime
+    opponent: Optional[UserResponse] = None
+    outcome: str  # "win", "loss", or "tie"
+
+    class Config:
+        from_attributes = True
+
+class UserStatsResponse(BaseModel):
+    """Complete user profile with statistics"""
+    id: int
+    name: str
+    username: str
+    created_at: datetime.datetime
+    is_admin: bool
+    wins: int
+    losses: int
+    ties: int
+    total_games: int
+    win_ratio: float  # wins / total_games
+    loss_ratio: float  # losses / total_games
+    tie_ratio: float  # ties / total_games
+    recent_games: List[GameRecordResponse]
 
     class Config:
         from_attributes = True
@@ -287,6 +331,142 @@ class Server:
             if not success:
                 raise HTTPException(status_code=404, detail="User not found")
             return {"message": "User deleted"}
+
+        @self.app.get("/api/users/{user_id}/stats", response_model=UserStatsResponse)
+        @auth_logged_in()
+        async def get_user_stats(user_id: int, auth_context: AuthContext = Depends(get_current_auth_context)):
+            """Get detailed user statistics including wins, losses, ties, and recent games"""
+            # Enforce logged in requirement
+            require_logged_in(auth_context)
+            
+            user = self.user_service.get_user_by_id(user_id)
+            if not user:
+                raise HTTPException(status_code=404, detail="User not found")
+            
+            # Calculate statistics
+            wins = 0
+            losses = 0
+            ties = 0
+            recent_games_list = []
+            
+            # Get all games where this user participated
+            all_games = list(user.games_as_x) + list(user.games_as_o)
+            # Sort by created_at descending to get most recent first
+            all_games.sort(key=lambda g: g.created_at, reverse=True)
+            
+            for game in all_games:
+                if not game.finished:
+                    continue
+                
+                # Determine outcome
+                if game.winner_id == user_id:
+                    wins += 1
+                    outcome = "win"
+                elif game.winner_id is None:
+                    # Tie game
+                    ties += 1
+                    outcome = "tie"
+                else:
+                    # User lost
+                    losses += 1
+                    outcome = "loss"
+                
+                # Add to recent games (only finished games)
+                if len(recent_games_list) < 10:  # Limit to 10 recent games
+                    # Get opponent info
+                    opponent_id = game.o_user_id if game.x_user_id == user_id else game.x_user_id
+                    opponent = self.user_service.get_user_by_id(opponent_id)
+                    
+                    game_record = GameRecordResponse(
+                        id=game.id,
+                        x_user_id=game.x_user_id,
+                        o_user_id=game.o_user_id,
+                        winner_id=game.winner_id,
+                        created_at=game.created_at,
+                        opponent=UserResponse.from_orm(opponent) if opponent else None,
+                        outcome=outcome
+                    )
+                    recent_games_list.append(game_record)
+            
+            total_games = wins + losses + ties
+            win_ratio = wins / total_games if total_games > 0 else 0.0
+            loss_ratio = losses / total_games if total_games > 0 else 0.0
+            tie_ratio = ties / total_games if total_games > 0 else 0.0
+            
+            return UserStatsResponse(
+                id=user.id,
+                name=user.name,
+                username=user.username,
+                created_at=user.created_at,
+                is_admin=user.admin,
+                wins=wins,
+                losses=losses,
+                ties=ties,
+                total_games=total_games,
+                win_ratio=round(win_ratio, 3),
+                loss_ratio=round(loss_ratio, 3),
+                tie_ratio=round(tie_ratio, 3),
+                recent_games=recent_games_list
+            )
+
+        # ===== Admin User Management Routes =====
+
+        @self.app.put("/api/admin/users/{user_id}/username", response_model=UserResponse)
+        @auth_admin()
+        async def admin_reset_username(user_id: int, request: AdminResetUsernameRequest, auth_context: AuthContext = Depends(get_current_auth_context)):
+            """Reset a user's username (admin only)"""
+            require_admin(auth_context)
+            
+            try:
+                updated_user = self.user_service.reset_username(user_id, request.new_username)
+                if not updated_user:
+                    raise HTTPException(status_code=404, detail="User not found")
+                return UserResponse.from_orm(updated_user)
+            except ValueError as e:
+                raise HTTPException(status_code=400, detail=str(e))
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=str(e))
+
+        @self.app.put("/api/admin/users/{user_id}/password", response_model=AdminResetPasswordResponse)
+        @auth_admin()
+        async def admin_reset_password(user_id: int, auth_context: AuthContext = Depends(get_current_auth_context)):
+            """Reset a user's password with a random one (admin only). User must change on next login."""
+            require_admin(auth_context)
+            
+            try:
+                user, new_password = self.user_service.reset_password(user_id)
+                if not user:
+                    raise HTTPException(status_code=404, detail="User not found")
+                
+                return AdminResetPasswordResponse(
+                    id=user.id,
+                    username=user.username,
+                    new_password=new_password,
+                    message="Password has been reset. User must change password on next login."
+                )
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=str(e))
+
+        @self.app.delete("/api/admin/users/{user_id}")
+        @auth_admin()
+        async def admin_delete_user(user_id: int, request: AdminDeleteUserRequest, auth_context: AuthContext = Depends(get_current_auth_context)):
+            """Delete a user (admin only, requires confirmation)"""
+            require_admin(auth_context)
+            
+            if not request.confirm:
+                raise HTTPException(status_code=400, detail="Deletion must be confirmed with confirm=true")
+            
+            # Prevent admin from deleting themselves
+            if user_id == auth_context.user_id:
+                raise HTTPException(status_code=400, detail="Cannot delete your own account")
+            
+            try:
+                success = self.user_service.delete_user(user_id)
+                if not success:
+                    raise HTTPException(status_code=404, detail="User not found")
+                return {"message": "User deleted successfully"}
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=str(e))
 
         # ===== User Invite Routes =====
 

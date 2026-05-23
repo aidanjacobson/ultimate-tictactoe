@@ -1,5 +1,10 @@
 from database.schema import init_db
-from database.migrations import repair_winner_ids, add_game_state_column
+from database.migrations import (
+    repair_winner_ids, 
+    add_game_state_column, 
+    add_user_created_at_column,
+    add_user_password_must_reset_column
+)
 from server import Server
 from services.UserService import UserService
 from services.UserInviteService import UserInviteService
@@ -46,14 +51,26 @@ def main():
     print("Database initialized successfully")
 
     # Run database migrations
-    #print("Running database migrations...")
-    #add_game_state_column()
-    #repair_winner_ids()
+    print("Running database migrations...")
+    add_game_state_column()
+    add_user_created_at_column()
+    add_user_password_must_reset_column()
+    repair_winner_ids()
+    print("Database migrations completed")
 
     # Initialize default admin user if no users exist
     print("Checking for users...")
+    
+    # Create a fresh UserService after migrations to ensure it has access to new columns
     user_service = UserService()
-    all_users = user_service.get_all_users()
+    
+    try:
+        all_users = user_service.get_all_users()
+    except Exception as e:
+        # If there's an error querying users (e.g., schema mismatch), assume no users exist
+        print(f"Note: Could not query existing users ({type(e).__name__}: {e})")
+        print("Will proceed with default admin user creation if needed")
+        all_users = []
     
     if not all_users:
         print("No users found. Creating default admin user...")

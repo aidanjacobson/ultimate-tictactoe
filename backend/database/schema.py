@@ -69,6 +69,8 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     deleted = Column(Boolean, default=False)
     admin = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=True)
+    password_must_reset = Column(Boolean, default=False, nullable=True)
 
     # Relationships
     games_as_x = relationship("Game", foreign_keys="Game.x_user_id", back_populates="x_user")
