@@ -59,14 +59,6 @@
 }
 
 .playerName {
-  &:first-child {
-    grid-area: x-name;
-  }
-
-  &:nth-child(2) {
-    grid-area: o-name;
-  }
-
   font-size: $font-size-h1;
   font-weight: $font-weight-bold;
   color: $color-primary;
@@ -97,14 +89,22 @@
   @include body-text;
   color: $color-text-secondary;
   font-weight: $font-weight-medium;
+}
 
-  &:nth-child(4) {
-    grid-area: x-username;
-  }
+.xPlayerName {
+  grid-area: x-name;
+}
 
-  &:nth-child(5) {
-    grid-area: o-username;
-  }
+.oPlayerName {
+  grid-area: o-name;
+}
+
+.xPlayerUsername {
+  grid-area: x-username;
+}
+
+.oPlayerUsername {
+  grid-area: o-username;
 }
 
 .main {
