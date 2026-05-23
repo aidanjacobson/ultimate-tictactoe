@@ -42,8 +42,9 @@
       }
     }
 
-    &.finished .cell.winning-cell {
-      color: #ef4444;
+    &.overall-winning-subgame {
+      border-color: #ef4444;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
     }
 
     .cell {
@@ -79,9 +80,6 @@
         border: 2px solid #fbbf24;
       }
 
-      &.winning-cell {
-        color: #ef4444;
-      }
     }
 
     .overlay {
@@ -98,6 +96,11 @@
       color: rgb(255, 255, 255);
       pointer-events: none;
       text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3);
+
+      &.overall-winning-overlay {
+        color: #ef4444;
+        text-shadow: 2px 2px 4px rgba(239, 68, 68, 0.3);
+      }
     }
   }
 }

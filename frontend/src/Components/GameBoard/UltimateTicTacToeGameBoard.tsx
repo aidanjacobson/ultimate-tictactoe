@@ -50,26 +50,18 @@ export default function UltimateTicTacToeGameBoard({ gameState, activeCorner, on
     }
   }
 
-  const winningPositionsBySubgame = useMemo<Record<Position, Set<Position>>>(() => {
-    const subgames = {} as Record<Position, Set<Position>>
+  const overallWinningSubgames = useMemo<Set<Position>>(() => {
+    const winningSubgames = new Set<Position>()
+    if (!gameState.finished || !gameState.winner) return winningSubgames
 
-    POSITIONS.forEach((subgameKey) => {
-      const subgame = gameState[subgameKey]
-      const winningPositions = new Set<Position>()
-
-      if (subgame.finished && subgame.winner) {
-        WINNING_COMBINATIONS.forEach((combo) => {
-          const values = combo.map((position) => subgame[position])
-          if (values[0] && values.every((value) => value === values[0])) {
-            combo.forEach((position) => winningPositions.add(position))
-          }
-        })
+    WINNING_COMBINATIONS.forEach((combo) => {
+      const winners = combo.map((position) => gameState[position].winner)
+      if (winners[0] && winners.every((winner) => winner === winners[0])) {
+        combo.forEach((position) => winningSubgames.add(position))
       }
-
-      subgames[subgameKey] = winningPositions
     })
 
-    return subgames
+    return winningSubgames
   }, [gameState])
 
   const renderSubgame = (subgameKey: Position) => {
@@ -80,23 +72,23 @@ export default function UltimateTicTacToeGameBoard({ gameState, activeCorner, on
     const isActive = activeCorner === subgameKey
     const canPlayInThisCorner = isPlayerTurn && (activeCorner === subgameKey || activeCorner === '')
     const isActivePlayerTurn = isActive && isPlayerTurn
-    const winningPositions = winningPositionsBySubgame[subgameKey]
+    const isOverallWinningSubgame = overallWinningSubgames.has(subgameKey)
 
     return (
-      <div key={subgameKey} className={`subgame ${isFinished ? 'finished' : ''} ${isActive ? 'active' : ''} ${isActivePlayerTurn ? 'active-player-turn' : ''}`}>
+      <div key={subgameKey} className={`subgame ${isFinished ? 'finished' : ''} ${isActive ? 'active' : ''} ${isActivePlayerTurn ? 'active-player-turn' : ''} ${isOverallWinningSubgame ? 'overall-winning-subgame' : ''}`}>
         {POSITIONS.map((cellKey) => {
           const isLast = isLastMove(subgameKey, cellKey)
           return (
             <div 
               key={cellKey} 
-              className={`cell ${canPlayInThisCorner && getCell(subgameKey, cellKey) === '' ? 'clickable' : ''} ${isLast ? 'last-move' : ''} ${winningPositions.has(cellKey) ? 'winning-cell' : ''}`}
+              className={`cell ${canPlayInThisCorner && getCell(subgameKey, cellKey) === '' ? 'clickable' : ''} ${isLast ? 'last-move' : ''}`}
               onClick={() => handleCellClick(subgameKey, cellKey)}
             >
               {getCell(subgameKey, cellKey)}
             </div>
           )
         })}
-        {isFinished && <div className="overlay">{displayText}</div>}
+        {isFinished && <div className={`overlay ${isOverallWinningSubgame ? 'overall-winning-overlay' : ''}`}>{displayText}</div>}
       </div>
     )
   }
