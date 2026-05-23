@@ -7,6 +7,8 @@ import type { UserResponse } from '../../../datamodels/users';
 import type { GameInviteResponse } from '../../../datamodels/gameinvites';
 import styles from './DashboardPage.module.scss';
 
+const FINISHED_GAMES_PER_PAGE = 9;
+
 /**
  * DashboardPage - Main hub for user after login
  * Route: /
@@ -96,19 +98,22 @@ const DashboardPage: FC = () => {
     navigate(`/invites/game/use/${inviteId}`);
   };
 
-  const finishedGamesPerPage = 9;
-  const finishedGamesTotalPages = Math.ceil(finishedGames.length / finishedGamesPerPage);
-  const finishedGamesStart = (finishedGamesPage - 1) * finishedGamesPerPage;
+  const finishedGamesTotalPages = Math.max(
+    1,
+    Math.ceil(finishedGames.length / FINISHED_GAMES_PER_PAGE),
+  );
+  const finishedGamesStart = (finishedGamesPage - 1) * FINISHED_GAMES_PER_PAGE;
   const finishedGamesOnPage = finishedGames.slice(
     finishedGamesStart,
-    finishedGamesStart + finishedGamesPerPage,
+    finishedGamesStart + FINISHED_GAMES_PER_PAGE,
   );
 
   useEffect(() => {
-    if (finishedGamesPage > finishedGamesTotalPages && finishedGamesTotalPages > 0) {
-      setFinishedGamesPage(finishedGamesTotalPages);
-    }
-  }, [finishedGamesPage, finishedGamesTotalPages]);
+    setFinishedGamesPage((prevPage) => {
+      if (prevPage < 1) return 1;
+      return prevPage > finishedGamesTotalPages ? finishedGamesTotalPages : prevPage;
+    });
+  }, [finishedGamesTotalPages]);
 
   if (loading) {
     return (
