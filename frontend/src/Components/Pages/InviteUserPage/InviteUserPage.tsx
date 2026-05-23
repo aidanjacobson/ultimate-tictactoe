@@ -7,7 +7,7 @@ interface InviteResponse {
   id: number;
   invite_code: string;
   created_at: number;
-  expires_at: number;
+  expires_at: number | null;
   used: boolean;
 }
 
