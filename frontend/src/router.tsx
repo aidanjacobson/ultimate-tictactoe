@@ -3,6 +3,7 @@ import LoginPage from './Components/Pages/LoginPage/LoginPage';
 import DashboardPage from './Components/Pages/DashboardPage/DashboardPage';
 import GameplayPage from './Components/Pages/GameplayPage/GameplayPage';
 import SpectateGamePage from './Components/Pages/SpectateGamePage/SpectateGamePage';
+import MoveHistoryPage from './Components/Pages/MoveHistoryPage/MoveHistoryPage';
 import LeaderboardPage from './Components/Pages/LeaderboardPage/LeaderboardPage';
 import InviteUserPage from './Components/Pages/InviteUserPage/InviteUserPage';
 import GameInvitePage from './Components/Pages/GameInvitePage/GameInvitePage';
@@ -34,6 +35,9 @@ export const AppRoutes = () => {
 
       {/* Spectate - read-only view of any game */}
       <Route path="/spectate/:gameId" element={<SpectateGamePage />} />
+
+      {/* Move History - step-through replay of any past game */}
+      <Route path="/history/:gameId" element={<MoveHistoryPage />} />
 
       {/* Leaderboard */}
       <Route path="/leaderboard" element={<LeaderboardPage />} />

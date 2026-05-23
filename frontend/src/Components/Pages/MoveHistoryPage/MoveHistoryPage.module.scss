@@ -1,0 +1,284 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.page {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  background-color: $color-bg-primary;
+  color: $color-text-primary;
+  padding: $spacing-xl;
+  box-sizing: border-box;
+  overflow-x: hidden;
+
+  @media (max-width: 768px) {
+    padding: $spacing-lg;
+  }
+
+  @media (max-width: 480px) {
+    padding: $spacing-md;
+  }
+}
+
+.header {
+  margin-bottom: $spacing-3xl;
+  padding-bottom: $spacing-lg;
+  border-bottom: 1px solid $color-bg-tertiary;
+  text-align: center;
+
+  h1 {
+    @include heading-h1;
+    margin-bottom: $spacing-md;
+    background: linear-gradient(135deg, $color-primary, $color-info);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+
+    @media (max-width: 768px) {
+      font-size: 1.8rem;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 1.4rem;
+    }
+  }
+}
+
+.subtitle {
+  @include body-text;
+  color: $color-text-secondary;
+  margin: 0 0 $spacing-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-lg;
+  flex-wrap: wrap;
+
+  @media (max-width: 480px) {
+    gap: $spacing-sm;
+    flex-direction: column;
+  }
+}
+
+.playerName {
+  font-size: $font-size-h1;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+
+  @media (max-width: 768px) {
+    font-size: 1.3rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1rem;
+  }
+}
+
+.vs {
+  font-size: $font-size-h2;
+  font-weight: $font-weight-bold;
+  color: $color-info;
+  margin: 0 $spacing-md;
+
+  @media (max-width: 480px) {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+}
+
+.historyBadge {
+  display: inline-block;
+  margin-top: $spacing-sm;
+  padding: $spacing-xs $spacing-md;
+  background-color: rgba($color-primary, 0.15);
+  border: 1px solid $color-primary;
+  border-radius: $radius-sm;
+  color: $color-primary;
+  font-size: $font-size-small;
+  font-weight: $font-weight-semi-bold;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.main {
+  @include container;
+  @include flex-column;
+  gap: $spacing-xl;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+
+  @media (max-width: 768px) {
+    gap: $spacing-lg;
+  }
+
+  @media (max-width: 480px) {
+    gap: $spacing-md;
+  }
+
+  @include desktop-and-up {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+  }
+
+  @media (max-width: 768px) {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.stepIndicator {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: $spacing-lg;
+  background-color: $color-bg-tertiary;
+  border-radius: $radius-md;
+  width: 100%;
+  font-size: $font-size-body;
+  font-weight: $font-weight-semi-bold;
+  color: $color-text-secondary;
+
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+    padding: $spacing-md;
+  }
+}
+
+.errorMain {
+  @include container;
+  @include flex-column(center, center);
+  flex: 1;
+}
+
+.errorContainer {
+  @include card-base;
+  @include flex-column(center, center, $spacing-xl);
+  max-width: 600px;
+  width: 100%;
+  padding: $spacing-2xl;
+}
+
+.boardSection {
+  @include card-base;
+  @include flex-column(center, center);
+  padding: $spacing-xl;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    padding: $spacing-lg;
+  }
+
+  @media (max-width: 480px) {
+    padding: $spacing-lg $spacing-sm;
+  }
+}
+
+.controlsSection {
+  @include card-base;
+  @include flex-column(flex-start, stretch, $spacing-lg);
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
+.navControls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-sm;
+  flex-wrap: wrap;
+}
+
+.navButton {
+  @include button-base;
+  background-color: $color-bg-tertiary;
+  color: $color-text-primary;
+  border: 1px solid $color-bg-tertiary;
+  padding: $spacing-sm $spacing-md;
+  font-size: $font-size-body;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  transition: background-color 0.15s, opacity 0.15s;
+
+  &:hover:not(:disabled) {
+    background-color: $color-primary;
+    border-color: $color-primary;
+    color: #fff;
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+}
+
+.stepCounter {
+  font-size: $font-size-body;
+  font-weight: $font-weight-semi-bold;
+  color: $color-text-secondary;
+  min-width: 4rem;
+  text-align: center;
+}
+
+.scrubber {
+  width: 100%;
+  accent-color: $color-primary;
+  cursor: pointer;
+}
+
+.infoBox {
+  background-color: $color-bg-tertiary;
+  border-radius: $radius-md;
+  padding: $spacing-lg;
+  @include flex-column(flex-start, stretch, $spacing-md);
+
+  @media (max-width: 480px) {
+    padding: $spacing-md;
+  }
+
+  p {
+    @include body-text;
+    margin: 0;
+    color: $color-text-secondary;
+    font-size: $font-size-body;
+
+    @media (max-width: 480px) {
+      font-size: 0.9rem;
+    }
+
+    strong {
+      color: $color-text-primary;
+      font-weight: $font-weight-semi-bold;
+    }
+  }
+}
+
+.errorBox {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid $color-danger;
+  border-radius: $radius-md;
+  padding: $spacing-lg;
+  color: $color-danger;
+  font-size: $font-size-body;
+  margin-bottom: $spacing-lg;
+}
+
+.button {
+  @include button-base;
+  @include button-primary;
+  width: 100%;
+  margin-top: $spacing-md;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}

@@ -170,6 +170,9 @@ const SpectateGamePage: FC = () => {
           <button onClick={() => navigate(-1)} className={styles.button}>
             Go Back
           </button>
+          <button onClick={() => navigate(`/history/${gameId}`)} className={styles.button}>
+            View Move History
+          </button>
         </section>
       </main>
     </div>

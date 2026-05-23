@@ -258,6 +258,9 @@ const GameplayPage: FC = () => {
           <button onClick={() => navigate('/')} className={styles.button}>
             Return to Dashboard
           </button>
+          <button onClick={() => navigate(`/history/${gameId}`)} className={styles.button}>
+            View Move History
+          </button>
         </section>
       </main>
     </div>

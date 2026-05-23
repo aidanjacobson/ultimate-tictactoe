@@ -8,6 +8,7 @@ interface UltimateTicTacToeGameBoardProps {
   onCellClick?: (corner: string, position: string) => void
   isPlayerTurn?: boolean
   lastMove?: { corner: Position; position: Position } | null
+  showLastMove?: boolean
 }
 
 const POSITIONS: Position[] = [
@@ -33,14 +34,16 @@ const WINNING_COMBINATIONS: Position[][] = [
   ['topright', 'center', 'bottomleft'],
 ]
 
-export default function UltimateTicTacToeGameBoard({ gameState, activeCorner, onCellClick, isPlayerTurn, lastMove }: UltimateTicTacToeGameBoardProps) {
+export default function UltimateTicTacToeGameBoard({ gameState, activeCorner, onCellClick, isPlayerTurn, lastMove, showLastMove }: UltimateTicTacToeGameBoardProps) {
   const getCell = (subgameKey: Position, cellKey: Position) => {
     const subgame = gameState[subgameKey]
     return subgame[cellKey] || ''
   }
 
   const isLastMove = (cornerKey: Position, positionKey: Position): boolean => {
-    if (!lastMove || !isPlayerTurn || gameState.finished) return false
+    if (!lastMove) return false
+    if (showLastMove) return lastMove.corner === cornerKey && lastMove.position === positionKey
+    if (!isPlayerTurn || gameState.finished) return false
     return lastMove.corner === cornerKey && lastMove.position === positionKey
   }
 
