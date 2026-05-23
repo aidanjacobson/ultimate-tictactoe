@@ -1,5 +1,5 @@
 from database.schema import init_db
-from database.migrations import repair_winner_ids
+from database.migrations import repair_winner_ids, add_game_state_column
 from server import Server
 from services.UserService import UserService
 from services.UserInviteService import UserInviteService
@@ -47,7 +47,8 @@ def main():
 
     # Run database migrations
     print("Running database migrations...")
-    repair_winner_ids()
+    #add_game_state_column()
+    #repair_winner_ids()
 
     # Initialize default admin user if no users exist
     print("Checking for users...")

@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends
-from fastapi.responses import JSONResponse, PlainTextResponse, FileResponse, StreamingResponse
+from fastapi.responses import JSONResponse, PlainTextResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
@@ -426,7 +426,6 @@ class Server:
                     # Skip games that fail to load
                     print(f"Error loading game {g.id}: {e}")
             return result
-            return result
 
         @self.app.get("/api/games/user/{user_id}/opponent-turn", response_model=List[GameResponse])
         @auth_as_id(param_name="user_id")
@@ -445,7 +444,6 @@ class Server:
                     # Skip games that fail to load
                     print(f"Error loading game {g.id}: {e}")
             return result
-            return result
 
         @self.app.get("/api/games/user/{user_id}/finished", response_model=List[GameResponse])
         @auth_as_id(param_name="user_id")
@@ -463,7 +461,6 @@ class Server:
                 except Exception as e:
                     # Skip games that fail to load
                     print(f"Error loading game {g.id}: {e}")
-            return result
             return result
 
         @self.app.post("/api/games/{game_id}/turn", response_model=GameResponse)
@@ -534,9 +531,10 @@ class Server:
                             game_json = json.dumps(game_data, indent=2)
                             zip_file.writestr(f"game_{game.id}.json", game_json)
                 
-                zip_buffer.seek(0)
-                return StreamingResponse(
-                    iter([zip_buffer.getvalue()]),
+                # Get the zip bytes and return as response
+                zip_bytes = zip_buffer.getvalue()
+                return Response(
+                    content=zip_bytes,
                     media_type="application/zip",
                     headers={"Content-Disposition": "attachment; filename=games.zip"}
                 )

@@ -13,7 +13,7 @@ Environment variables for PostgreSQL:
     DB_PASSWORD: PostgreSQL password (default: empty)
 
 Example:
-    DB_HOST=localhost DB_PORT=5432 DB_NAME=tictactoe DB_USER=postgres DB_PASSWORD=mypass python migrate_sqlite_to_pg.py
+    cd backend && DB_HOST=localhost DB_PORT=5432 DB_NAME=tictactoe DB_USER=postgres DB_PASSWORD=mypass python migrate_sqlite_to_pg.py
 """
 
 import os
@@ -22,11 +22,8 @@ import argparse
 import json
 from pathlib import Path
 
-# Add backend to path
-sys.path.insert(0, str(Path(__file__).parent / "backend"))
-
 from sqlalchemy import inspect, text
-from backend.database.schema import Base, SessionLocal, engine as pg_engine, DB_TYPE
+from database.schema import Base, SessionLocal, engine as pg_engine, DB_TYPE
 from sqlalchemy import create_engine
 
 def get_sqlite_engine(sqlite_path):
@@ -73,12 +70,21 @@ def migrate_data(sqlite_engine, pg_engine, dry_run=False):
     
     try:
         # Import all models
-        from backend.database.schema import User, Game, UserInvite, Notification, GameInviteRequest
+        from database.schema import User, Game, UserInvite, Notification, GameInviteRequest
         
-        models = [User, Game, UserInvite, Notification, GameInviteRequest]
+        # Check if game_state column exists in SQLite (it won't in older databases)
+        sqlite_has_game_state = False
+        try:
+            with sqlite_engine.connect() as conn:
+                conn.execute(text("SELECT game_state FROM games LIMIT 1"))
+                sqlite_has_game_state = True
+        except:
+            sqlite_has_game_state = False
+        
+        # Migrate models excluding Game for now
+        models = [User, UserInvite, Notification, GameInviteRequest]
         total_records = 0
         
-        # Migrate each table
         for model in models:
             table_name = model.__tablename__
             count = get_table_count(sqlite_engine, table_name)
@@ -89,13 +95,10 @@ def migrate_data(sqlite_engine, pg_engine, dry_run=False):
             
             print(f"  → {table_name}: migrating {count} records...")
             
-            # Read all records from SQLite
             records = sqlite_session.query(model).all()
             
             if not dry_run:
-                # Add to PostgreSQL session
                 for record in records:
-                    # Create a new instance for PostgreSQL
                     pg_session.merge(record)
                 
                 pg_session.flush()
@@ -103,9 +106,50 @@ def migrate_data(sqlite_engine, pg_engine, dry_run=False):
             total_records += count
             print(f"    ✓ {count} records migrated")
         
+        # Special handling for Game model
+        game_count = get_table_count(sqlite_engine, "games")
+        if game_count > 0:
+            print(f"  → games: migrating {game_count} records...")
+            
+            # Query games without the game_state column
+            if sqlite_has_game_state:
+                games = sqlite_session.query(Game).all()
+            else:
+                # Use raw query to avoid the missing column
+                with sqlite_engine.connect() as conn:
+                    result = conn.execute(text("""
+                        SELECT id, x_user_id, o_user_id, finished, winner_id, created_at, updated_at
+                        FROM games
+                    """))
+                    
+                    games = []
+                    for row in result:
+                        game = Game(
+                            id=row[0],
+                            x_user_id=row[1],
+                            o_user_id=row[2],
+                            finished=row[3],
+                            winner_id=row[4],
+                            created_at=row[5],
+                            updated_at=row[6],
+                            game_state=None
+                        )
+                        games.append(game)
+            
+            if not dry_run:
+                for game in games:
+                    pg_session.merge(game)
+                
+                pg_session.flush()
+            
+            total_records += game_count
+            print(f"    ✓ {game_count} records migrated")
+        
         # Special handling for game state files -> PostgreSQL game_state column
         print(f"\n  → game_state JSON files: migrating to game_state column...")
-        games_dir = os.path.join(os.environ.get("DATA_DIR", "./devdata"), "games")
+        # Use the same DATA_DIR resolution as the app does
+        data_dir = os.environ.get("DATA_DIR", "../devdata")
+        games_dir = os.path.join(data_dir, "games")
         if os.path.exists(games_dir):
             game_files = [f for f in os.listdir(games_dir) if f.endswith('.json')]
             migrated_games = 0
@@ -155,8 +199,8 @@ def main():
     )
     parser.add_argument(
         "--sqlite-path",
-        default="./devdata/app.db",
-        help="Path to SQLite database (default: ./devdata/app.db)"
+        default="../devdata/app.db",
+        help="Path to SQLite database (default: ../devdata/app.db)"
     )
     parser.add_argument(
         "--dry-run",
