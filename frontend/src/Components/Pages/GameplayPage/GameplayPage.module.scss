@@ -48,16 +48,13 @@
   margin: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
+  grid-template-areas:
+    "x-name vs o-name"
+    "x-username . o-username";
+  align-items: end;
   justify-items: center;
+  row-gap: $spacing-xs;
   column-gap: $spacing-lg;
-}
-
-.playerStack {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: $spacing-xs;
 }
 
 .playerName {
@@ -75,9 +72,11 @@
 }
 
 .vs {
+  grid-area: vs;
   font-size: $font-size-h2;
   font-weight: $font-weight-bold;
   color: $color-info;
+  line-height: 1;
 
   @media (max-width: 480px) {
     font-size: 0.9rem;
@@ -85,16 +84,29 @@
 }
 
 .playerUsername {
+  line-height: 1;
   @include body-text;
   color: $color-text-secondary;
   font-weight: $font-weight-medium;
 }
 
-.xPlayerStack {
+.xPlayerName {
+  grid-area: x-name;
   justify-self: end;
 }
 
-.oPlayerStack {
+.oPlayerName {
+  grid-area: o-name;
+  justify-self: start;
+}
+
+.xPlayerUsername {
+  grid-area: x-username;
+  justify-self: end;
+}
+
+.oPlayerUsername {
+  grid-area: o-username;
   justify-self: start;
 }
 
