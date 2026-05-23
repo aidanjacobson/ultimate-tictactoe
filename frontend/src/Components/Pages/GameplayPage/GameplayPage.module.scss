@@ -44,23 +44,29 @@
   }
 }
 
-.subtitle {
-  @include body-text;
-  color: $color-text-secondary;
+.playerHeader {
   margin: 0;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas:
+    "x-name o-name"
+    "vs vs"
+    "x-username o-username";
   align-items: center;
-  justify-content: center;
-  gap: $spacing-lg;
-  flex-wrap: wrap;
-
-  @media (max-width: 480px) {
-    gap: $spacing-sm;
-    flex-direction: column;
-  }
+  justify-items: center;
+  row-gap: $spacing-sm;
+  column-gap: $spacing-lg;
 }
 
 .playerName {
+  &:first-child {
+    grid-area: x-name;
+  }
+
+  &:nth-child(2) {
+    grid-area: o-name;
+  }
+
   font-size: $font-size-h1;
   font-weight: $font-weight-bold;
   color: $color-primary;
@@ -75,6 +81,7 @@
 }
 
 .vs {
+  grid-area: vs;
   font-size: $font-size-h2;
   font-weight: $font-weight-bold;
   color: $color-info;
@@ -83,6 +90,20 @@
   @media (max-width: 480px) {
     margin: 0;
     font-size: 0.9rem;
+  }
+}
+
+.playerUsername {
+  @include body-text;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+
+  &:nth-child(4) {
+    grid-area: x-username;
+  }
+
+  &:nth-child(5) {
+    grid-area: o-username;
   }
 }
 

@@ -172,11 +172,13 @@ const GameplayPage: FC = () => {
     <div className={styles.page}>
       <header className={styles.header}>
         <h1>Ultimate TicTacToe</h1>
-        <p className={styles.subtitle}>
+        <div className={styles.playerHeader}>
           <span className={styles.playerName}>{game.x_user?.name || 'Player X'}</span>
-          <span className={styles.vs}>vs</span>
           <span className={styles.playerName}>{game.o_user?.name || 'Player O'}</span>
-        </p>
+          <span className={styles.vs}>VS</span>
+          <span className={styles.playerUsername}>@{game.x_user?.username || 'player_x'}</span>
+          <span className={styles.playerUsername}>@{game.o_user?.username || 'player_o'}</span>
+        </div>
       </header>
 
       <main className={styles.main}>
