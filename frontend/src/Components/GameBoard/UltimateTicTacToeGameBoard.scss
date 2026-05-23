@@ -43,7 +43,7 @@
     }
 
     &.overall-winning-subgame {
-      border-color: #ef4444;
+      border-color: #ff0000;
       box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
     }
 
@@ -98,7 +98,7 @@
       text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3);
 
       &.overall-winning-overlay {
-        color: #ef4444;
+        color: #ff0000;
         text-shadow: 2px 2px 4px rgba(239, 68, 68, 0.3);
       }
     }
