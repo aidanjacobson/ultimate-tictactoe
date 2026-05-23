@@ -64,6 +64,19 @@
   }
 }
 
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-md;
+  margin-top: $spacing-lg;
+}
+
+.pageIndicator {
+  @include body-text;
+  color: $color-text-secondary;
+}
+
 .inviteList {
   display: flex;
   flex-direction: column;
@@ -115,6 +128,17 @@
   &:active {
     transform: scale(0.98);
   }
+
+  &:disabled {
+    background-color: $color-bg-tertiary;
+    color: $color-text-secondary;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.pagination .button {
+  margin-top: 0;
 }
 
 .loading,

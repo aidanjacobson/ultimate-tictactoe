@@ -28,6 +28,7 @@ const DashboardPage: FC = () => {
   const [yourTurnGames, setYourTurnGames] = useState<GameResponse[]>([]);
   const [opponentTurnGames, setOpponentTurnGames] = useState<GameResponse[]>([]);
   const [finishedGames, setFinishedGames] = useState<GameResponse[]>([]);
+  const [finishedGamesPage, setFinishedGamesPage] = useState(1);
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -94,6 +95,20 @@ const DashboardPage: FC = () => {
   const handleInviteClick = (inviteId: number) => {
     navigate(`/invites/game/use/${inviteId}`);
   };
+
+  const finishedGamesPerPage = 9;
+  const finishedGamesTotalPages = Math.ceil(finishedGames.length / finishedGamesPerPage);
+  const finishedGamesStart = (finishedGamesPage - 1) * finishedGamesPerPage;
+  const finishedGamesOnPage = finishedGames.slice(
+    finishedGamesStart,
+    finishedGamesStart + finishedGamesPerPage,
+  );
+
+  useEffect(() => {
+    if (finishedGamesPage > finishedGamesTotalPages && finishedGamesTotalPages > 0) {
+      setFinishedGamesPage(finishedGamesTotalPages);
+    }
+  }, [finishedGamesPage, finishedGamesTotalPages]);
 
   if (loading) {
     return (
@@ -187,7 +202,7 @@ const DashboardPage: FC = () => {
           <section className={styles.section}>
             <h2>Finished Games</h2>
             <div className={styles.gamesList}>
-              {finishedGames.map((game) => (
+              {finishedGamesOnPage.map((game) => (
                 <GameCard
                   key={game.id}
                   game={game}
@@ -195,6 +210,29 @@ const DashboardPage: FC = () => {
                 />
               ))}
             </div>
+            {finishedGamesTotalPages > 1 && (
+              <div className={styles.pagination}>
+                <button
+                  className={styles.button}
+                  type="button"
+                  onClick={() => setFinishedGamesPage((prev) => prev - 1)}
+                  disabled={finishedGamesPage === 1}
+                >
+                  Previous
+                </button>
+                <span className={styles.pageIndicator}>
+                  Page {finishedGamesPage} of {finishedGamesTotalPages}
+                </span>
+                <button
+                  className={styles.button}
+                  type="button"
+                  onClick={() => setFinishedGamesPage((prev) => prev + 1)}
+                  disabled={finishedGamesPage === finishedGamesTotalPages}
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </section>
         )}
 
