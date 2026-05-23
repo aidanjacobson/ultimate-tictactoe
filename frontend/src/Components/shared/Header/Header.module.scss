@@ -45,6 +45,12 @@
   }
 }
 
+.brandContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .title {
   font-size: $font-size-h1;
   font-weight: $font-weight-bold;
@@ -62,6 +68,22 @@
 
   @media (max-width: 480px) {
     font-size: 1rem;
+  }
+}
+
+.subtitle {
+  font-size: $font-size-small;
+  font-weight: $font-weight-medium;
+  color: $color-text-secondary;
+  margin: 0;
+  white-space: nowrap;
+
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.65rem;
   }
 }
 

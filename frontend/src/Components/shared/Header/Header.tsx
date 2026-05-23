@@ -28,7 +28,10 @@ const Header: FC = () => {
       <div className={styles.container}>
         {/* App Name */}
         <div className={styles.brand}>
-          <h1 className={styles.title}>Ultimate TicTacToe</h1>
+          <div className={styles.brandContent}>
+            <h1 className={styles.title}>Ultimate TicTacToe</h1>
+            <p className={styles.subtitle}>Now with 100% more Kubernetes!</p>
+          </div>
         </div>
 
         {/* Navigation Tabs */}
