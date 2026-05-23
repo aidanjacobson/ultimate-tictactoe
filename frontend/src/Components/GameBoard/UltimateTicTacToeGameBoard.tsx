@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import type { UltimateTicTacToeGameState, Position } from '../../datamodels/tictactoe'
 import './UltimateTicTacToeGameBoard.scss'
 
@@ -21,6 +22,17 @@ const POSITIONS: Position[] = [
   'bottomright',
 ]
 
+const WINNING_COMBINATIONS: Position[][] = [
+  ['topleft', 'topmiddle', 'topright'],
+  ['middleleft', 'center', 'middleright'],
+  ['bottomleft', 'bottommiddle', 'bottomright'],
+  ['topleft', 'middleleft', 'bottomleft'],
+  ['topmiddle', 'center', 'bottommiddle'],
+  ['topright', 'middleright', 'bottomright'],
+  ['topleft', 'center', 'bottomright'],
+  ['topright', 'center', 'bottomleft'],
+]
+
 export default function UltimateTicTacToeGameBoard({ gameState, activeCorner, onCellClick, isPlayerTurn, lastMove }: UltimateTicTacToeGameBoardProps) {
   const getCell = (subgameKey: Position, cellKey: Position) => {
     const subgame = gameState[subgameKey]
@@ -38,6 +50,20 @@ export default function UltimateTicTacToeGameBoard({ gameState, activeCorner, on
     }
   }
 
+  const overallWinningSubgames = useMemo<Set<Position>>(() => {
+    const winningSubgames = new Set<Position>()
+    if (!gameState.finished || !gameState.winner) return winningSubgames
+
+    WINNING_COMBINATIONS.forEach((combo) => {
+      const winners = combo.map((position) => gameState[position].winner)
+      if (winners[0] && winners.every((winner) => winner === winners[0])) {
+        combo.forEach((position) => winningSubgames.add(position))
+      }
+    })
+
+    return winningSubgames
+  }, [gameState])
+
   const renderSubgame = (subgameKey: Position) => {
     const subgame = gameState[subgameKey]
     const isFinished = subgame.finished
@@ -46,9 +72,10 @@ export default function UltimateTicTacToeGameBoard({ gameState, activeCorner, on
     const isActive = activeCorner === subgameKey
     const canPlayInThisCorner = isPlayerTurn && (activeCorner === subgameKey || activeCorner === '')
     const isActivePlayerTurn = isActive && isPlayerTurn
+    const isOverallWinningSubgame = overallWinningSubgames.has(subgameKey)
 
     return (
-      <div key={subgameKey} className={`subgame ${isFinished ? 'finished' : ''} ${isActive ? 'active' : ''} ${isActivePlayerTurn ? 'active-player-turn' : ''}`}>
+      <div key={subgameKey} className={`subgame ${isFinished ? 'finished' : ''} ${isActive ? 'active' : ''} ${isActivePlayerTurn ? 'active-player-turn' : ''} ${isOverallWinningSubgame ? 'overall-winning-subgame' : ''}`}>
         {POSITIONS.map((cellKey) => {
           const isLast = isLastMove(subgameKey, cellKey)
           return (
@@ -61,7 +88,7 @@ export default function UltimateTicTacToeGameBoard({ gameState, activeCorner, on
             </div>
           )
         })}
-        {isFinished && <div className="overlay">{displayText}</div>}
+        {isFinished && <div className={`overlay ${isOverallWinningSubgame ? 'overall-winning-overlay' : ''}`}>{displayText}</div>}
       </div>
     )
   }

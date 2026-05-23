@@ -42,6 +42,11 @@
       }
     }
 
+    &.overall-winning-subgame {
+      border-color: #ff0000;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
+    }
+
     .cell {
       width: 60px;
       height: 60px;
@@ -74,6 +79,7 @@
         background-color: #fef08a;
         border: 2px solid #fbbf24;
       }
+
     }
 
     .overlay {
@@ -90,6 +96,11 @@
       color: rgb(255, 255, 255);
       pointer-events: none;
       text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3);
+
+      &.overall-winning-overlay {
+        color: #ff0000;
+        text-shadow: 2px 2px 4px rgba(239, 68, 68, 0.3);
+      }
     }
   }
 }
