@@ -1,0 +1,320 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal {
+  @include card-base;
+  background-color: $color-bg-primary;
+  max-width: 480px;
+  width: 94%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.25s ease-out;
+  overflow: hidden;
+}
+
+.header {
+  padding: $spacing-xl $spacing-2xl $spacing-lg;
+  border-bottom: 1px solid $color-bg-tertiary;
+  flex-shrink: 0;
+
+  h2 {
+    @include heading-h2;
+    margin: 0 0 $spacing-xs;
+    background: linear-gradient(135deg, $color-primary, $color-info);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+.subtitle {
+  margin: 0;
+  font-size: $font-size-small;
+  color: $color-text-secondary;
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: $spacing-lg $spacing-2xl;
+  @include flex-column(flex-start, stretch, $spacing-lg);
+}
+
+.loadingMsg {
+  @include body-text;
+  color: $color-text-secondary;
+  text-align: center;
+  padding: $spacing-2xl 0;
+  margin: 0;
+}
+
+// === Player slot ===
+
+.slot {
+  @include flex-column(flex-start, stretch, $spacing-sm);
+}
+
+.slotHeader {
+  display: flex;
+  align-items: stretch;
+  gap: $spacing-sm;
+}
+
+.slotLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  flex-shrink: 0;
+  border-radius: $radius-sm;
+  font-size: $font-size-body-lg;
+  font-weight: $font-weight-bold;
+}
+
+.slotLabelX {
+  background-color: rgba($color-primary, 0.15);
+  color: $color-primary;
+}
+
+.slotLabelO {
+  background-color: rgba($color-info, 0.15);
+  color: $color-info;
+}
+
+.slotButton {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  background-color: $color-bg-secondary;
+  border: 1px solid $color-bg-tertiary;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background-color 0.15s;
+
+  &:hover:not(:disabled) {
+    border-color: $color-primary;
+    background-color: rgba($color-primary, 0.05);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.slotName {
+  font-weight: $font-weight-semi-bold;
+  color: $color-text-primary;
+  font-size: $font-size-body;
+  flex: 1;
+}
+
+.slotUsername {
+  font-size: $font-size-small;
+  color: $color-text-secondary;
+}
+
+.slotEmpty {
+  flex: 1;
+  font-size: $font-size-body;
+  color: $color-text-secondary;
+  font-style: italic;
+}
+
+.slotChevron {
+  font-size: 10px;
+  color: $color-text-secondary;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+// === Inline picker ===
+
+.picker {
+  border: 1px solid $color-bg-tertiary;
+  border-radius: $radius-sm;
+  background-color: $color-bg-secondary;
+  overflow: hidden;
+}
+
+.search {
+  width: 100%;
+  padding: $spacing-sm $spacing-md;
+  background-color: $color-bg-primary;
+  border: none;
+  border-bottom: 1px solid $color-bg-tertiary;
+  color: $color-text-primary;
+  font-size: $font-size-body;
+  box-sizing: border-box;
+  outline: none;
+
+  &::placeholder {
+    color: $color-text-secondary;
+  }
+}
+
+.pickerList {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.pickerEmpty {
+  @include body-text;
+  color: $color-text-secondary;
+  text-align: center;
+  padding: $spacing-lg;
+  margin: 0;
+  font-size: $font-size-small;
+}
+
+.pickerUser {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  background: none;
+  border: none;
+  border-bottom: 1px solid $color-bg-tertiary;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.1s;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover:not(:disabled) {
+    background-color: rgba($color-primary, 0.08);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+.pickerUserSelected {
+  background-color: rgba($color-primary, 0.12);
+}
+
+.pickerName {
+  font-weight: $font-weight-semi-bold;
+  color: $color-text-primary;
+  font-size: $font-size-body;
+}
+
+.pickerMeta {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  font-size: $font-size-small;
+  color: $color-text-secondary;
+}
+
+.badge {
+  padding: 1px $spacing-xs;
+  background-color: rgba($color-primary, 0.15);
+  color: $color-primary;
+  border-radius: $radius-sm;
+  font-size: 10px;
+  font-weight: $font-weight-semi-bold;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.badgeConflict {
+  padding: 1px $spacing-xs;
+  background-color: rgba($color-warning, 0.15);
+  color: $color-warning;
+  border-radius: $radius-sm;
+  font-size: 10px;
+  font-weight: $font-weight-semi-bold;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+// === Validation error ===
+
+.validationError {
+  margin: 0 $spacing-2xl;
+  padding: $spacing-sm $spacing-md;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid $color-danger;
+  border-radius: $radius-sm;
+  color: $color-danger;
+  font-size: $font-size-small;
+  flex-shrink: 0;
+}
+
+// === Actions ===
+
+.actions {
+  display: flex;
+  gap: $spacing-md;
+  padding: $spacing-lg $spacing-2xl;
+  border-top: 1px solid $color-bg-tertiary;
+  flex-shrink: 0;
+}
+
+.cancelButton {
+  @include button-base;
+  flex: 1;
+  padding: $spacing-md;
+  background-color: $color-bg-secondary;
+  border: 1px solid $color-bg-tertiary;
+  color: $color-text-secondary;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  font-weight: $font-weight-semi-bold;
+  transition: background-color 0.15s;
+
+  &:hover:not(:disabled) {
+    background-color: $color-bg-tertiary;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.confirmButton {
+  @include button-base;
+  @include button-primary;
+  flex: 2;
+  padding: $spacing-md;
+  border-radius: $radius-sm;
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

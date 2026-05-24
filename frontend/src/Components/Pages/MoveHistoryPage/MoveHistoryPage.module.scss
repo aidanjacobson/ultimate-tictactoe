@@ -268,6 +268,42 @@
   margin-bottom: $spacing-lg;
 }
 
+.forkButton {
+  @include button-base;
+  width: 100%;
+  padding: $spacing-md;
+  background-color: rgba($color-info, 0.12);
+  border: 1px solid $color-info;
+  color: $color-info;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  font-weight: $font-weight-semi-bold;
+  transition: background-color 0.15s, transform 0.1s;
+
+  &:hover:not(:disabled) {
+    background-color: rgba($color-info, 0.22);
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+}
+
+.forkError {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid $color-danger;
+  border-radius: $radius-sm;
+  padding: $spacing-sm $spacing-md;
+  color: $color-danger;
+  font-size: $font-size-small;
+}
+
 .button {
   @include button-base;
   @include button-primary;

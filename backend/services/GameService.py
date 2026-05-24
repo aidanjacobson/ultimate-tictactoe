@@ -5,6 +5,7 @@ from services.UserService import UserService
 from services.NotificationService import NotificationService
 from database.schema import SessionLocal, Game
 from sqlalchemy.orm import joinedload
+import datetime
 
 
 class GameService:
@@ -305,6 +306,64 @@ class GameService:
         # Sort by updated_at descending
         opponent_turn_games.sort(key=lambda g: g.updated_at, reverse=True)
         return opponent_turn_games
+
+    def fork_game(self, source_game_id: int, from_move_index: int, x_user_id: int, o_user_id: int) -> Dict[str, Any]:
+        """
+        Fork a game from a specific move, creating a new game starting from that state.
+
+        Args:
+            source_game_id: The ID of the source game to fork
+            from_move_index: Index into allStates (history + current_game); 0 = empty board
+            x_user_id: ID of the user playing X in the forked game
+            o_user_id: ID of the user playing O in the forked game
+
+        Returns:
+            Dictionary with the new forked game data
+        """
+        if x_user_id == o_user_id:
+            raise ValueError("Cannot play a game against yourself")
+
+        user_x = self.user_service.get_user_by_id(x_user_id)
+        user_o = self.user_service.get_user_by_id(o_user_id)
+        if not user_x or not user_o:
+            raise ValueError("One or both users not found")
+
+        source_game_record = self.db.query(Game).filter(Game.id == source_game_id).first()
+        if not source_game_record:
+            raise ValueError(f"Game with ID {source_game_id} not found")
+
+        source_game = self.game_file_service.load_game(source_game_id)
+        if not source_game:
+            raise ValueError(f"Could not load game state for game {source_game_id}")
+
+        all_states = source_game.history + [source_game.current_game]
+        if from_move_index < 0 or from_move_index >= len(all_states):
+            raise ValueError(f"Move index {from_move_index} is out of range (0–{len(all_states) - 1})")
+
+        fork_state = all_states[from_move_index]
+        if fork_state.finished:
+            raise ValueError("Cannot fork from a finished game state")
+
+        game_record = Game(
+            x_user_id=x_user_id,
+            o_user_id=o_user_id,
+            finished=False
+        )
+        self.db.add(game_record)
+        self.db.commit()
+        self.db.refresh(game_record)
+
+        forked_game = UltimateTicTacToe(
+            current_game=fork_state.copy(),
+            history=[]
+        )
+        self.game_file_service.save_game(game_record.id, forked_game)
+
+        # Update timestamp
+        game_record.updated_at = datetime.datetime.utcnow()
+        self.db.commit()
+
+        return self.get_game(game_record.id)
 
     def list_games_finished(self, user_id: int) -> list:
         """

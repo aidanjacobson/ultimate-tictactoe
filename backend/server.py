@@ -79,6 +79,11 @@ class GameCreate(BaseModel):
     x_user_id: int
     o_user_id: int
 
+class GameForkRequest(BaseModel):
+    from_move_index: int
+    x_user_id: int
+    o_user_id: int
+
 class GameTurn(BaseModel):
     corner: str
     position: str
@@ -657,6 +662,22 @@ class Server:
                 return self.game_service.get_game(game_id)
             except Exception as e:
                 raise HTTPException(status_code=404, detail=str(e))
+
+        @self.app.post("/api/games/{game_id}/fork", response_model=GameResponse)
+        @auth_logged_in()
+        async def fork_game(game_id: int, fork_request: GameForkRequest, auth_context: AuthContext = Depends(get_current_auth_context)):
+            """Fork a game from a specific move, creating a new playable game"""
+            require_logged_in(auth_context)
+
+            try:
+                return self.game_service.fork_game(
+                    source_game_id=game_id,
+                    from_move_index=fork_request.from_move_index,
+                    x_user_id=fork_request.x_user_id,
+                    o_user_id=fork_request.o_user_id
+                )
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=str(e))
 
         @self.app.get("/api/games/{game_id}/ascii", response_model=str)
         @auth_as_id_in_game(game_id_param="game_id")

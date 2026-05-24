@@ -205,6 +205,14 @@ export class ApiService {
         return this.request('POST', `/games/${gameId}/turn`, turn);
     }
 
+    static async forkGame(gameId: number, fromMoveIndex: number, xUserId: number, oUserId: number): Promise<GameResponse> {
+        return this.request('POST', `/games/${gameId}/fork`, {
+            from_move_index: fromMoveIndex,
+            x_user_id: xUserId,
+            o_user_id: oUserId,
+        });
+    }
+
     // Invites
     static async createUserInvite(inviteCode: string | null, expiryDays: number | null): Promise<any> {
         return this.request('POST', '/invite', {

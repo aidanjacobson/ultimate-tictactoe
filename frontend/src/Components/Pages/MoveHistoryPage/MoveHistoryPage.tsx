@@ -2,6 +2,7 @@ import { FC, useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ApiService from '../../../services/ApiService';
 import UltimateTicTacToeGameBoard from '../../GameBoard/UltimateTicTacToeGameBoard';
+import ForkModal from './ForkModal';
 import type { GameResponse, UltimateTicTacToeGameState, Position } from '../../../datamodels/tictactoe';
 import styles from './MoveHistoryPage.module.scss';
 
@@ -45,6 +46,9 @@ const MoveHistoryPage: FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [stepIndex, setStepIndex] = useState(0);
+  const [showForkModal, setShowForkModal] = useState(false);
+  const [forkLoading, setForkLoading] = useState(false);
+  const [forkError, setForkError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchGame = async () => {
@@ -93,6 +97,21 @@ const MoveHistoryPage: FC = () => {
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
   }, [goToPrev, goToNext]);
+
+  const handleFork = useCallback(async (xUserId: number, oUserId: number) => {
+    if (!gameId) return;
+    setForkLoading(true);
+    setForkError(null);
+    try {
+      const newGame = await ApiService.forkGame(parseInt(gameId), stepIndex, xUserId, oUserId);
+      navigate(`/game/${newGame.id}`);
+    } catch (err) {
+      setForkError(err instanceof Error ? err.message : 'Failed to fork game');
+      setForkLoading(false);
+    }
+  }, [gameId, stepIndex, navigate]);
+
+  const currentStateIsFinished = currentState?.finished ?? false;
 
   if (loading) {
     return (
@@ -239,11 +258,35 @@ const MoveHistoryPage: FC = () => {
             )}
           </div>
 
+          {forkError && (
+            <div className={styles.forkError}>{forkError}</div>
+          )}
+
+          <button
+            className={styles.forkButton}
+            onClick={() => { setForkError(null); setShowForkModal(true); }}
+            disabled={currentStateIsFinished}
+            title={currentStateIsFinished ? 'Cannot fork from a finished game state' : 'Start a new game from this position'}
+          >
+            Fork from here
+          </button>
+
           <button onClick={() => navigate(-1)} className={styles.button}>
             Go Back
           </button>
         </section>
       </main>
+
+      {showForkModal && game && (
+        <ForkModal
+          game={game}
+          stepIndex={stepIndex}
+          totalMoves={totalMoves}
+          onConfirm={handleFork}
+          onClose={() => setShowForkModal(false)}
+          loading={forkLoading}
+        />
+      )}
     </div>
   );
 };
