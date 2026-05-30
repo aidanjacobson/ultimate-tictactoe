@@ -4,6 +4,8 @@ import ApiService from '../../../services/ApiService';
 import type { UserStatsResponse, UserResponse, ActiveGameRecord } from '../../../datamodels/users';
 import styles from './UserProfilePage.module.scss';
 
+const COMPLETED_GAMES_PER_PAGE = 9;
+
 /**
  * UserProfilePage - Detailed user profile with statistics
  * Route: /users/:userId
@@ -31,10 +33,20 @@ const UserProfilePage: FC = () => {
   const [showResetPasswordResult, setShowResetPasswordResult] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [usernameChangeSuccess, setUsernameChangeSuccess] = useState(false);
+  const [recentGamesPage, setRecentGamesPage] = useState(1);
   const usernameInputRef = useRef<HTMLInputElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
 
   const userIdNum = parseInt(userId || '0', 10);
+  const recentGamesTotalPages = Math.max(
+    1,
+    Math.ceil((userStats?.recent_games.length ?? 0) / COMPLETED_GAMES_PER_PAGE),
+  );
+  const recentGamesStart = (recentGamesPage - 1) * COMPLETED_GAMES_PER_PAGE;
+  const recentGamesOnPage = userStats?.recent_games.slice(
+    recentGamesStart,
+    recentGamesStart + COMPLETED_GAMES_PER_PAGE,
+  ) ?? [];
 
   // Fetch user stats and current user
   useEffect(() => {
@@ -83,6 +95,13 @@ const UserProfilePage: FC = () => {
       passwordInputRef.current.select();
     }
   }, [showResetPasswordResult]);
+
+  useEffect(() => {
+    setRecentGamesPage((prevPage) => {
+      if (prevPage < 1) return 1;
+      return prevPage > recentGamesTotalPages ? recentGamesTotalPages : prevPage;
+    });
+  }, [recentGamesTotalPages]);
 
   const handleDeleteUser = async () => {
     if (!showDeleteConfirm) {
@@ -325,7 +344,7 @@ const UserProfilePage: FC = () => {
           <section className={styles.recentGamesCard}>
             <h2>Recent Games ({userStats.recent_games.length})</h2>
             <div className={styles.gamesGrid}>
-              {userStats.recent_games.map(game => (
+              {recentGamesOnPage.map(game => (
                 <div
                   key={game.id}
                   className={`${styles.gameTile} ${styles[game.outcome]}`}
@@ -343,6 +362,29 @@ const UserProfilePage: FC = () => {
                 </div>
               ))}
             </div>
+            {recentGamesTotalPages > 1 && (
+              <div className={styles.pagination}>
+                <button
+                  className={styles.pageButton}
+                  type="button"
+                  onClick={() => setRecentGamesPage((prev) => prev - 1)}
+                  disabled={recentGamesPage === 1}
+                >
+                  Previous
+                </button>
+                <span className={styles.pageIndicator}>
+                  Page {recentGamesPage} of {recentGamesTotalPages}
+                </span>
+                <button
+                  className={styles.pageButton}
+                  type="button"
+                  onClick={() => setRecentGamesPage((prev) => prev + 1)}
+                  disabled={recentGamesPage === recentGamesTotalPages}
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </section>
         )}
       </main>
