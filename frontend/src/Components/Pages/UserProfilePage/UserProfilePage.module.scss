@@ -110,6 +110,39 @@
   }
 }
 
+.pagination {
+  margin-top: $spacing-lg;
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.pageButton {
+  padding: $spacing-sm $spacing-md;
+  background-color: $color-primary;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover:not(:disabled) {
+    background-color: $color-primary-dark;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.pageIndicator {
+  color: $color-text-secondary;
+  font-size: 0.9rem;
+}
+
 .statItem {
   text-align: center;
   padding: $spacing-md;

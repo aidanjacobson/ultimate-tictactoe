@@ -408,22 +408,20 @@ class Server:
                     losses += 1
                     outcome = "loss"
                 
-                # Add to recent games (only finished games)
-                if len(recent_games_list) < 10:  # Limit to 10 recent games
-                    # Get opponent info
-                    opponent_id = game.o_user_id if game.x_user_id == user_id else game.x_user_id
-                    opponent = self.user_service.get_user_by_id(opponent_id)
-                    
-                    game_record = GameRecordResponse(
-                        id=game.id,
-                        x_user_id=game.x_user_id,
-                        o_user_id=game.o_user_id,
-                        winner_id=game.winner_id,
-                        created_at=game.created_at,
-                        opponent=UserResponse.from_orm(opponent) if opponent else None,
-                        outcome=outcome
-                    )
-                    recent_games_list.append(game_record)
+                # Add to recent games (all finished games)
+                opponent_id = game.o_user_id if game.x_user_id == user_id else game.x_user_id
+                opponent = self.user_service.get_user_by_id(opponent_id)
+                
+                game_record = GameRecordResponse(
+                    id=game.id,
+                    x_user_id=game.x_user_id,
+                    o_user_id=game.o_user_id,
+                    winner_id=game.winner_id,
+                    created_at=game.created_at,
+                    opponent=UserResponse.from_orm(opponent) if opponent else None,
+                    outcome=outcome
+                )
+                recent_games_list.append(game_record)
             
             total_games = wins + losses + ties
             win_ratio = wins / total_games if total_games > 0 else 0.0

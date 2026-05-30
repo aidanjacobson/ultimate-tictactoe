@@ -1,8 +1,10 @@
-import { FC, useState, useEffect, useRef } from 'react';
+import { FC, useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ApiService from '../../../services/ApiService';
 import type { UserStatsResponse, UserResponse, ActiveGameRecord } from '../../../datamodels/users';
 import styles from './UserProfilePage.module.scss';
+
+const COMPLETED_GAMES_PER_PAGE = 9;
 
 /**
  * UserProfilePage - Detailed user profile with statistics
@@ -31,10 +33,26 @@ const UserProfilePage: FC = () => {
   const [showResetPasswordResult, setShowResetPasswordResult] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [usernameChangeSuccess, setUsernameChangeSuccess] = useState(false);
+  const [recentGamesPage, setRecentGamesPage] = useState(1);
   const usernameInputRef = useRef<HTMLInputElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
 
   const userIdNum = parseInt(userId || '0', 10);
+  const recentGamesTotalPages = useMemo(
+    () => Math.max(1, Math.ceil((userStats?.recent_games.length ?? 0) / COMPLETED_GAMES_PER_PAGE)),
+    [userStats?.recent_games.length],
+  );
+  const boundedRecentGamesPage = useMemo(
+    () => Math.min(Math.max(recentGamesPage, 1), recentGamesTotalPages),
+    [recentGamesPage, recentGamesTotalPages],
+  );
+  const recentGamesOnPage = useMemo(() => {
+    const recentGamesStart = (boundedRecentGamesPage - 1) * COMPLETED_GAMES_PER_PAGE;
+    return userStats?.recent_games.slice(
+      recentGamesStart,
+      recentGamesStart + COMPLETED_GAMES_PER_PAGE,
+    ) ?? [];
+  }, [boundedRecentGamesPage, userStats?.recent_games]);
 
   // Fetch user stats and current user
   useEffect(() => {
@@ -83,6 +101,14 @@ const UserProfilePage: FC = () => {
       passwordInputRef.current.select();
     }
   }, [showResetPasswordResult]);
+
+  useEffect(() => {
+    setRecentGamesPage(1);
+  }, [userIdNum]);
+
+  useEffect(() => {
+    setRecentGamesPage((prev) => Math.min(prev, recentGamesTotalPages));
+  }, [recentGamesTotalPages]);
 
   const handleDeleteUser = async () => {
     if (!showDeleteConfirm) {
@@ -325,7 +351,7 @@ const UserProfilePage: FC = () => {
           <section className={styles.recentGamesCard}>
             <h2>Recent Games ({userStats.recent_games.length})</h2>
             <div className={styles.gamesGrid}>
-              {userStats.recent_games.map(game => (
+              {recentGamesOnPage.map(game => (
                 <div
                   key={game.id}
                   className={`${styles.gameTile} ${styles[game.outcome]}`}
@@ -343,6 +369,29 @@ const UserProfilePage: FC = () => {
                 </div>
               ))}
             </div>
+            {recentGamesTotalPages > 1 && (
+              <div className={styles.pagination}>
+                <button
+                  className={styles.pageButton}
+                  type="button"
+                  onClick={() => setRecentGamesPage((prev) => Math.max(1, prev - 1))}
+                  disabled={boundedRecentGamesPage === 1}
+                >
+                  Previous
+                </button>
+                <span className={styles.pageIndicator}>
+                  Page {boundedRecentGamesPage} of {recentGamesTotalPages}
+                </span>
+                <button
+                  className={styles.pageButton}
+                  type="button"
+                  onClick={() => setRecentGamesPage((prev) => Math.min(recentGamesTotalPages, prev + 1))}
+                  disabled={boundedRecentGamesPage === recentGamesTotalPages}
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </section>
         )}
       </main>
